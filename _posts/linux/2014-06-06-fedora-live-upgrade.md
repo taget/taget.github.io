@@ -4,8 +4,6 @@ category : lessons
 tags : [intro]
 ---
 
-[TOC]
-
 # Fedora 在线升级
 ## 所需工具工具 fedup
 ### fedup的安装
