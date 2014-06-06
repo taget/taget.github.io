@@ -1,0 +1,13 @@
+
+http://taget.github.io/archive.html
+http://taget.github.io/atom.xml
+http://taget.github.io/categories.html
+http://taget.github.io/index.html
+http://taget.github.io/pages.html
+http://taget.github.io/rss.xml
+http://taget.github.io/sitemap.txt
+http://taget.github.io/tags.html
+
+http://taget.github.io/lessons/2014/06/06/openstack-start
+http://taget.github.io/2014/06/06/linux-pci
+http://taget.github.io/lessons/2014/06/06/fedora-live-upgrade

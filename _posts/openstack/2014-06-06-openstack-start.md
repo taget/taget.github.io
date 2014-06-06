@@ -1,7 +1,7 @@
 ---
 layout: post
 category : lessons
-tags : [intro]
+tags : [openstack]
 ---
 
 ## 简介

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+ 
+ <title>Eli's Blog</title>
+ <link href="http://taget.github.io/" rel="self"/>
+ <link href="http://taget.github.io"/>
+ <updated>2014-06-06T06:24:31+00:00</updated>
+ <id>http://taget.github.io</id>
+ <author>
+   <name>Eli Qiao</name>
+   <email>qiaoliyong@gmail.com</email>
+ </author>
+
+ 
+ <entry>
+   <title>Openstack Start</title>
+   <link href="http://taget.github.io/lessons/2014/06/06/openstack-start"/>
+   <updated>2014-06-06T00:00:00+00:00</updated>
+   <id>http://taget.github.io/lessons/2014/06/06/openstack-start</id>
+   <content type="html">&lt;h2 id=&quot;section&quot;&gt;简介&lt;/h2&gt;
+
+&lt;h3 id=&quot;openstack&quot;&gt;Openstack是什么&lt;/h3&gt;
+
+&lt;h3 id=&quot;openstack-&quot;&gt;Openstack 包含那些组件&lt;/h3&gt;
+
+&lt;h3 id=&quot;openstack-1&quot;&gt;从哪儿可以获得Openstack&lt;/h3&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;更多&lt;/h3&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Linux PCI</title>
+   <link href="http://taget.github.io/2014/06/06/linux-pci"/>
+   <updated>2014-06-06T00:00:00+00:00</updated>
+   <id>http://taget.github.io/2014/06/06/linux-pci</id>
+   <content type="html">
+&lt;h1 id=&quot;pci-&quot;&gt;PCI 简介&lt;/h1&gt;
+&lt;p&gt;PCI(Periheral Component Interconnect)有三种地址空间：PCI I/O空间、PCI内存地址空间和PCI配置空间。&lt;/p&gt;
+
+&lt;p&gt;I/O 空间和内存地址空间由PCI驱动使用。
+PCI配置空间由Linux PCI初始化代码使用，由内核用来进行配置，比如中断号和I/O内存基址空间。&lt;/p&gt;
+
+&lt;h2 id=&quot;pci--1&quot;&gt;PCI 桥&lt;/h2&gt;
+&lt;p&gt;一共有三种PCI桥：
+* HOST/PCI桥（HOST bridge）：用于连接CPU和PCI的桥设备
+* PCI/ISA桥 （ISA bridge）：用于连接PCI总线和ISA总线的桥
+* PCI-PCI桥（PCI-PCI bridge）：用于PCI总线的扩展
+下图展示了pci桥的层次连接：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/pci-connection.jpg&quot; alt=&quot;pci bridge connection&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在使用PCI设备之前,Linux Knerle需要对其进行枚举和配置。
+枚举的结果就将是一个树状的结构，根是HOST/PCI桥。&lt;/p&gt;
+
+&lt;h2 id=&quot;pci&quot;&gt;配置PCI设备&lt;/h2&gt;
+&lt;p&gt;Linux kernel 对PCI配置空间进行配置。这个PCI配置空间其实就是一些寄存器，成为配置寄存器组。
+当PCI设备尚未被激活的时候，它只对配置事务响应。设备上是不会有I/O端口映射到计算机的内存空间的。
+中断也会被禁止。&lt;/p&gt;
+
+&lt;h2 id=&quot;pci-1&quot;&gt;PCI设备的地址空间&lt;/h2&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Fedora Live Upgrade</title>
+   <link href="http://taget.github.io/lessons/2014/06/06/fedora-live-upgrade"/>
+   <updated>2014-06-06T00:00:00+00:00</updated>
+   <id>http://taget.github.io/lessons/2014/06/06/fedora-live-upgrade</id>
+   <content type="html">&lt;h1 id=&quot;fedora-&quot;&gt;Fedora 在线升级&lt;/h1&gt;
+&lt;p&gt;## 所需工具工具 fedup
+### fedup的安装
+&lt;code&gt;
+$sudo yum install fedup
+&lt;/code&gt;
+fedup装成功后，推荐使用网络方式升级系统&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;
+$sudo fedup-cli --network 20 --addrepo f20=http://mirrors.163.com/fedora/releases/20/Everything/x86_64/os/
+&lt;/code&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ 
+</feed>

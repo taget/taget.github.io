@@ -1,7 +1,7 @@
 ---
 layout: post
 category : lessons
-tags : [intro]
+tags : [linux]
 ---
 
 # Fedora 在线升级
