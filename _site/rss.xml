@@ -5,10 +5,76 @@
         <description>Eli's Blog - Eli Qiao</description>
         <link>http://taget.github.io</link>
         <link>http://taget.github.io</link>
-        <lastBuildDate>2014-06-09T07:27:53+00:00</lastBuildDate>
-        <pubDate>2014-06-09T07:27:53+00:00</pubDate>
+        <lastBuildDate>2014-06-09T08:34:56+00:00</lastBuildDate>
+        <pubDate>2014-06-09T08:34:56+00:00</pubDate>
         <ttl>1800</ttl>
 
+
+        <item>
+                <title>Linux Network Namespace</title>
+                <description>&lt;h2 id=&quot;linux-network-namespaces&quot;&gt;Linux Network Namespaces&lt;/h2&gt;
+
+&lt;p&gt;Linux 3.8 加入了namespaces，用于支持网络的隔离，我们看一下namespace是如何使用的&lt;/p&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;创建与配置&lt;/h3&gt;
+
+&lt;p&gt;创建一个名为blue的namespace&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;
+ip netns add blue
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;列出所有的namespace&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;
+ip netns list
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;namespace&quot;&gt;分配网络接口到namespace上&lt;/h3&gt;
+
+&lt;p&gt;我们可以将一对veth中的一个分配到namespace上，将另一个分配到另一个上。&lt;/p&gt;
+
+&lt;p&gt;veth的创建如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;
+ip link add veth0 type veth peer name veth1
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;这样就创建了一对veth，veth0 和veth1。
+veth的作用就像一根网线一样，从一端进入的数据会从另一端出来。
+使用
+&lt;code&gt;
+ip link list
+&lt;/code&gt;
+查看创建的veth设备。&lt;/p&gt;
+
+&lt;p&gt;如果我们想把刚创建的namaespace与global/default namespace连接，我们可以这样做：
+&lt;code&gt;
+ip link set veth1 netns blue
+&lt;/code&gt;
+veth1 从global从消失了,因为这对veth的另一端veth0在default中，这样我们就可以将两个 namespace联系起来了。&lt;/p&gt;
+
+&lt;p&gt;使用如下命令查看blue namespace中的连接&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;
+ip netns exec blue ip link list
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;如何配置namespace中的接口呢？可以使用如下命令：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;
+ip netns exec &amp;lt;network namespace&amp;gt; &amp;lt;command to run against that namespace&amp;gt;
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;连接到物理网络&lt;/h3&gt;
+
+&lt;p&gt;可以使用linux bridge 或者 openvswith bridge。将物理接口和veth的一个加入到同一个bridge就可以了。&lt;/p&gt;
+
+</description>
+                <link>http://taget.github.io/lessons/2014/06/09/linux-network-namespace</link>
+                <guid>http://taget.github.io/lessons/2014/06/09/linux-network-namespace</guid>
+                <pubDate>2014-06-09T00:00:00+00:00</pubDate>
+        </item>
 
         <item>
                 <title>Openstack Start</title>
