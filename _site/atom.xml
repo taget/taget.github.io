@@ -4,7 +4,7 @@
  <title>Eli's Blog</title>
  <link href="http://taget.github.io/" rel="self"/>
  <link href="http://taget.github.io"/>
- <updated>2014-06-09T07:09:34+00:00</updated>
+ <updated>2014-06-09T07:27:53+00:00</updated>
  <id>http://taget.github.io</id>
  <author>
    <name>Eli Qiao</name>
@@ -77,9 +77,15 @@ PCI配置空间由Linux PCI初始化代码使用，由内核用来进行配置�
 &lt;h2 id=&quot;pci-2&quot;&gt;访问PCI设备的几种方式&lt;/h2&gt;
 &lt;ul&gt;
   &lt;li&gt;通过访问I/O端口, I/O 地址空间一般不关联到系统内存，因为端口也可以映射到内存中，会引起混淆;&lt;/li&gt;
-  &lt;li&gt;I/O 内存映射，就是我们通常说的IOMMU,即将特定外设的端口地址映射到普通内存中。cpu可以像普通内存一样操作设备。内核通过ioremap和iounmap命令用于映射I/O内存&lt;/li&gt;
+  &lt;li&gt;I/O 内存映射，就是我们通常说的MMIO,即将特定外设的端口地址映射到普通内存中。cpu可以像普通内存一样操作设备。内核通过ioremap和iounmap命令用于映射I/O内存&lt;/li&gt;
   &lt;li&gt;轮询和中断，显然中断是更好的方式。&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h2 id=&quot;pcibarbase-address-register&quot;&gt;PCI的BAR（base address register）&lt;/h2&gt;
+&lt;p&gt;BAR是PCI配置空间中从0x10 到 0x24的6个register，用来定义PCI需要的配置空间大小以及配置PCI设备占用的地址空间。
+X86的地址空间分为，IO 和 MEM 两类，PCI的BAR的某一位决定了设备需要映射到MEM空间还是IO空间。
+POWERPC只有MEM空间（IO空间不单独编址）。&lt;/p&gt;
+
 </content>
  </entry>
  
