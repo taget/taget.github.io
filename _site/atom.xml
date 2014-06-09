@@ -4,7 +4,7 @@
  <title>Eli's Blog</title>
  <link href="http://taget.github.io/" rel="self"/>
  <link href="http://taget.github.io"/>
- <updated>2014-06-06T06:24:31+00:00</updated>
+ <updated>2014-06-09T07:09:34+00:00</updated>
  <id>http://taget.github.io</id>
  <author>
    <name>Eli Qiao</name>
@@ -55,12 +55,31 @@ PCI配置空间由Linux PCI初始化代码使用，由内核用来进行配置�
 枚举的结果就将是一个树状的结构，根是HOST/PCI桥。&lt;/p&gt;
 
 &lt;h2 id=&quot;pci&quot;&gt;配置PCI设备&lt;/h2&gt;
-&lt;p&gt;Linux kernel 对PCI配置空间进行配置。这个PCI配置空间其实就是一些寄存器，成为配置寄存器组。
+&lt;p&gt;Linux kernel 对PCI配置空间进行配置。这个PCI配置空间其实就是一些寄存器，称为配置寄存器组。
 当PCI设备尚未被激活的时候，它只对配置事务响应。设备上是不会有I/O端口映射到计算机的内存空间的。
 中断也会被禁止。&lt;/p&gt;
 
 &lt;h2 id=&quot;pci-1&quot;&gt;PCI设备的地址空间&lt;/h2&gt;
+&lt;p&gt;所有PCI设备的配置空间寄存器组都采用相同的地址，由总线的PCI桥在访问时附加上其他条件进行区分。
+对于CPU来说，它通过一个统一的入口地址HOST/PCI桥，即树型结构的根发出指令，再由相应的PCI桥间接地完成具体的读写。
+这个PCI桥（或者称PCI总线）包含两个寄存器，’地址寄存器’和’数据寄存器’，CPU向’地址寄存器’写入要访问的地址，然后通过’数据寄存器’读取数据。
+地址寄存器的地址组成：
+总线号：设备号：功能号：寄存器号
+示例，lspci 输出：&lt;/p&gt;
 
+&lt;ul&gt;
+  &lt;li&gt;0000 : PCI domain (each domain can contain up to 256 PCI buses)&lt;/li&gt;
+  &lt;li&gt;04   : the bus number the device is attached to&lt;/li&gt;
+  &lt;li&gt;00   : the device number&lt;/li&gt;
+  &lt;li&gt;.0   : PCI device function&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;pci-2&quot;&gt;访问PCI设备的几种方式&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;通过访问I/O端口, I/O 地址空间一般不关联到系统内存，因为端口也可以映射到内存中，会引起混淆;&lt;/li&gt;
+  &lt;li&gt;I/O 内存映射，就是我们通常说的IOMMU,即将特定外设的端口地址映射到普通内存中。cpu可以像普通内存一样操作设备。内核通过ioremap和iounmap命令用于映射I/O内存&lt;/li&gt;
+  &lt;li&gt;轮询和中断，显然中断是更好的方式。&lt;/li&gt;
+&lt;/ul&gt;
 </content>
  </entry>
  
