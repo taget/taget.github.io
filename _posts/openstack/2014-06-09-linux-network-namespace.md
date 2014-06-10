@@ -6,7 +6,7 @@ tags : [networking, linux]
 
 ## Linux Network Namespaces
 
-Linux 3.8 加入了namespaces，用于支持网络的隔离，我们看一下namespace是如何使用的
+Linux kernel在2.6.29中加入了namespaces，用于支持网络的隔离，我们看一下namespace是如何使用的
 
 ### 创建与配置
 
