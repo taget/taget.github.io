@@ -8,6 +8,7 @@ http://taget.github.io/rss.xml
 http://taget.github.io/sitemap.txt
 http://taget.github.io/tags.html
 
+http://taget.github.io/lessons/2014/06/10/use-cloud-image-locally
 http://taget.github.io/lessons/2014/06/09/linux-network-namespace
 http://taget.github.io/lessons/2014/06/06/openstack-start
 http://taget.github.io/2014/06/06/linux-pci
