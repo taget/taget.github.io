@@ -137,6 +137,50 @@
   <div class="col-xs-12">
     <ul>
     
+    <li><span>13 Jun 2014</span> &raquo; <a href="/2014/06/13/linux-interrupt">Linux Interrupt</a></li>
+        
+Linux 中断
+中断硬件发起，外部设备与cpu通信的一种方式，相对于cpu轮询，中断是更好的方式。
+中断设备与cpu的物理连接方式如下：
+
+
+
+一般来说，外设并不直接与cpu相连接，而是通过一个叫’中断控制器’硬件连接。这个中断控制器是可被编程配置的。
+所以又称它为’可编程中断控制器’（PIC）。外设向中断控制器发起中断，然后，’中断控制器’告诉cpu有中断到来。
+cpu去读取中断控制器（PIC）产生的软中断号。
+初始化需要配置PIC，配置内容包括：
+
+
+  中断触发的电信号类型（水平还是边沿触发）
+  将外设的引脚编号映射到cpu可见的软件中断号irq
+  屏蔽掉某些外部设备的中断触发
+
+
+中断向量表
+
+中断向量表是cpu的内部概念。当发生 ‘异常’ 或者 ‘内部中断’时，cpu会查看中断向量表该异常或者中断对应的处理函数地址。
+
+通用中断处理函数
+
+通常，当发生外部设备中断时，外设向中断控制器产生一个中断，中断控制器生成一个软件中断信号通知cpu。cpu发现是一个外部
+中断，他会查询中断向量表中的某一表项去处理该中断。该表项对应的就是通用中断处理函数的入口地址。操作系统会提供这个通
+用中断处理函数的定义。
+
+通用中断处理函数的处理过程大致为：
+
+
+  获取软件中断号irq，一般使用汇编编写。
+  调用do_irq，c函数编写
+
+
+HARDIRQ 和 SOFTIRQ
+
+HARDIRQ在中断关闭情况下执行，他的执行时间尽可能短
+SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中断处理器，一般驱动程序可以将耗时部分放在此部分执行。
+
+<br />
+            <a href="/2014/06/13/linux-interrupt">Read more...</a><br /><br />
+    
     <li><span>10 Jun 2014</span> &raquo; <a href="/lessons/2014/06/10/use-cloud-image-locally">Use Cloud Image Locally</a></li>
         如何在本地使用cloud镜像 fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可以直接下载并将其运行为一个虚拟机实例。 但是这些cloud镜像文件默认磁盘分区大小可能无法满足我们的需求，而且，默认是不提供通过密码访问的方式访问虚拟机。 本文将介绍如何快速修该磁盘分区大小以及访问虚拟机。 本文中使用的环境为fedora 20，并且需要libguestfs-tools提供的工具，使用如下命令安装。 sudo yum install libguestfs-tools -y 首先获取image，使用国内163网站的镜像服务器下载fedora20的镜像文件: wget http://mirrors.163.com/fedora/releases/20/Images/x86_64/Fedora-x86_64-20-20131211.1-sda.qcow2 因为libguestfs工具以来libvirt启动虚拟机来进行编辑镜像文件，所以我们要把镜像文件放在/var/lib/libvirt/images目录下。 查看镜像文件大小，并对其进行扩展 $ virt-filesystems --long --parts --blkdevs -h -a Fedora-x86_64-20-20131211.1-sda.qcow2 Name Type MBR Size Parent /dev/sda1 partition 83 1.9G /dev/sda /dev/sda device - 2.0G - $ virt-df -h Fedora-x86_64-20-20131211.1-sda.qcow2 Filesystem Size Used Available Use% Fedora-x86_64-20-20131211.1-sda.qcow2:/dev/sda1 1.8G...<br />
             <a href="/lessons/2014/06/10/use-cloud-image-locally">Read more...</a><br /><br />

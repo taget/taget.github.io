@@ -5,10 +5,58 @@
         <description>Eli's Blog - Eli Qiao</description>
         <link>http://taget.github.io</link>
         <link>http://taget.github.io</link>
-        <lastBuildDate>2014-06-10T09:24:31+00:00</lastBuildDate>
-        <pubDate>2014-06-10T09:24:31+00:00</pubDate>
+        <lastBuildDate>2014-06-16T07:12:34+00:00</lastBuildDate>
+        <pubDate>2014-06-16T07:12:34+00:00</pubDate>
         <ttl>1800</ttl>
 
+
+        <item>
+                <title>Linux Interrupt</title>
+                <description>
+&lt;h2 id=&quot;linux-&quot;&gt;Linux 中断&lt;/h2&gt;
+&lt;p&gt;中断硬件发起，外部设备与cpu通信的一种方式，相对于cpu轮询，中断是更好的方式。
+中断设备与cpu的物理连接方式如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/pic-cpu-connection.jpeg&quot; alt=&quot;pci bridge connection&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;一般来说，外设并不直接与cpu相连接，而是通过一个叫’中断控制器’硬件连接。这个中断控制器是可被编程配置的。
+所以又称它为’可编程中断控制器’（PIC）。外设向中断控制器发起中断，然后，’中断控制器’告诉cpu有中断到来。
+cpu去读取中断控制器（PIC）产生的软中断号。
+初始化需要配置PIC，配置内容包括：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;中断触发的电信号类型（水平还是边沿触发）&lt;/li&gt;
+  &lt;li&gt;将外设的引脚编号映射到cpu可见的软件中断号irq&lt;/li&gt;
+  &lt;li&gt;屏蔽掉某些外部设备的中断触发&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;中断向量表&lt;/h2&gt;
+
+&lt;p&gt;中断向量表是cpu的内部概念。当发生 ‘异常’ 或者 ‘内部中断’时，cpu会查看中断向量表该异常或者中断对应的处理函数地址。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;通用中断处理函数&lt;/h2&gt;
+
+&lt;p&gt;通常，当发生外部设备中断时，外设向中断控制器产生一个中断，中断控制器生成一个软件中断信号通知cpu。cpu发现是一个外部
+中断，他会查询中断向量表中的某一表项去处理该中断。该表项对应的就是通用中断处理函数的入口地址。操作系统会提供这个通
+用中断处理函数的定义。&lt;/p&gt;
+
+&lt;p&gt;通用中断处理函数的处理过程大致为：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;获取软件中断号irq，一般使用汇编编写。&lt;/li&gt;
+  &lt;li&gt;调用do_irq，c函数编写&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;hardirq--softirq&quot;&gt;HARDIRQ 和 SOFTIRQ&lt;/h2&gt;
+
+&lt;p&gt;HARDIRQ在中断关闭情况下执行，他的执行时间尽可能短
+SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中断处理器，一般驱动程序可以将耗时部分放在此部分执行。&lt;/p&gt;
+
+</description>
+                <link>http://taget.github.io/2014/06/13/linux-interrupt</link>
+                <guid>http://taget.github.io/2014/06/13/linux-interrupt</guid>
+                <pubDate>2014-06-13T00:00:00+00:00</pubDate>
+        </item>
 
         <item>
                 <title>Use Cloud Image Locally</title>
