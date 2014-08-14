@@ -137,6 +137,10 @@
   <div class="col-xs-12">
     <ul>
     
+    <li><span>14 Aug 2014</span> &raquo; <a href="/lessons/2014/08/14/deploy-openstack-with-packstack">Deploy Openstack With Packstack</a></li>
+        使用packstack部署openstack 本文将介绍如何使用Redhat提供的packstack部署openstack Openstack 简介 openstack 是一整套资源管理软件的集合，也是当前最热的开源虚拟化管理软件之一，有一个全球139个国家将近两万开发者参与的开源社区（www.openstack.org）作为支持。openstack项目的目的是快速建设一个稳定可靠的公有云或私有云系统。整个项目涵盖了计算，存储，网络以及前端展现等关于云管理的全部方面，包含了众多子项目。 主要包含了一下几个子项目: OpenStack Compute (code-name Nova) 计算服务 OpenStack Networking (code-name Neutron) 网络服务 OpenStack Object Storage (code-name Swift) 对象存储服务 OpenStack Block Storage (code-name Cinder) 块设备存储服务 OpenStack Identity (code-name Keystone) 认证服务 OpenStack Image Service (code-name Glance) 镜像文件服务 OpenStack Dashboard (code-name Horizon) 仪表盘服务 OpenStack Telemetry (code-name Ceilometer) 告警服务...<br />
+            <a href="/lessons/2014/08/14/deploy-openstack-with-packstack">Read more...</a><br /><br />
+    
     <li><span>13 Jun 2014</span> &raquo; <a href="/2014/06/13/linux-interrupt">Linux Interrupt</a></li>
         
 Linux 中断
@@ -173,8 +177,17 @@ cpu去读取中断控制器（PIC）产生的软中断号。
   调用do_irq，c函数编写
 
 
+所以，当一个外部设备产生中断后，到cpu响应该中断的流程如下：
+1. 外设触发一个中断
+2. 中断控制器（PIC）获取中断号并报告给cpu
+3. cpu得知这是一个外部中断，它去查找他的中断向量表，找到通用中断处理函数的地址
+4. cpu调用中断处理函数，通过向PIC查询软中断号
+5. 中断处理函数通过软中断号找到该外设注册的中断处理子函数（由驱动提供,在irq_desc数组中）
+
 HARDIRQ 和 SOFTIRQ
 
+当cpu在响应一个中断的时候，如果有新的中断到来了，如何处理呢？
+cpu为了处理这种情况，将中断处理分成了上半部和下半部。
 HARDIRQ在中断关闭情况下执行，他的执行时间尽可能短
 SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中断处理器，一般驱动程序可以将耗时部分放在此部分执行。
 
