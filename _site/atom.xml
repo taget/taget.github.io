@@ -4,13 +4,219 @@
  <title>Eli's Blog</title>
  <link href="http://taget.github.io/" rel="self"/>
  <link href="http://taget.github.io"/>
- <updated>2014-08-14T01:11:09+00:00</updated>
+ <updated>2014-09-18T10:08:42+00:00</updated>
  <id>http://taget.github.io</id>
  <author>
    <name>Eli Qiao</name>
    <email>qiaoliyong@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Request Data Flow</title>
+   <link href="http://taget.github.io/lessons/2014/09/18/request-data-flow"/>
+   <updated>2014-09-18T00:00:00+00:00</updated>
+   <id>http://taget.github.io/lessons/2014/09/18/request-data-flow</id>
+   <content type="html">&lt;h2 id=&quot;data-flow-of-openstack-request&quot;&gt;Data flow of openstack request&lt;/h2&gt;
+
+&lt;p&gt;This post will talk about the data flow of an openstack request, I will take boot an instance and shelve an instance as example.&lt;/p&gt;
+
+&lt;p&gt;Assume that you have setup an openstack environment already.&lt;/p&gt;
+
+&lt;p&gt;Let’s start from nova client, you can put &lt;code&gt;–debug&lt;/code&gt; option to nova client then you will see the request url nova client sent.&lt;/p&gt;
+
+&lt;h3 id=&quot;boot-an-instance&quot;&gt;Boot an instance&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;[tagett@stack-01 devstack]$ nova --debug boot t3 --flavor m1.nano --image  44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf --nic net-id=b745b2c6-db16-40ab-8ad7-af6da0e5e699
+…
+REQ: curl -i &#39;http://cloudcontroller:5000/v2.0/tokens&#39;
+REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/images/44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf&#39;
+REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/flavors/m1.nano&#39;
+REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers&#39; -X POST -H &quot;Accept: application/json&quot; -H &quot;Content-Type: application/json&quot; -H &quot;User-Agent: python-novaclient&quot; -H &quot;X-Auth-Project-Id: admin&quot; -H &quot;X-Auth-Token: {SHA1}15d9e554b7456f1043732bb8df72d1521c5f6aa1&quot; -d &#39;{&quot;server&quot;: {&quot;name&quot;: &quot;t3&quot;, &quot;imageRef&quot;: &quot;44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf&quot;, &quot;flavorRef&quot;: &quot;42&quot;, &quot;max_count&quot;: 1, &quot;min_count&quot;: 1, &quot;networks&quot;: [{&quot;uuid&quot;: &quot;b745b2c6-db16-40ab-8ad7-af6da0e5e699&quot;}]}}&#39;
+…
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The requests from nova client are:&lt;/p&gt;
+
+&lt;p&gt;1)  Get token from keystone server with username and password, keystone will return the token, and also the tenant id.&lt;/p&gt;
+
+&lt;p&gt;2)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if image existed. &lt;/p&gt;
+
+&lt;p&gt;3)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if favors existed.&lt;/p&gt;
+
+&lt;p&gt;4)  Request to create an instance, all request data are put in the request body, check –d section.&lt;/p&gt;
+
+&lt;p&gt;Nova client help you to make all requests together, the most important one is the 4), if you are sure about all resources, you can simply run 4) to create an instance.&lt;/p&gt;
+
+&lt;p&gt;The date flow will be follows:&lt;/p&gt;
+
+&lt;p&gt;Nova client -&amp;gt; nova-api -&amp;gt; nova-conductor-&amp;gt;nova-scheduler-&amp;gt;nova-compute&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/boot.png&quot; alt=&quot;boot&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Each one is an service(a running process), they call each other through rpc server.&lt;/p&gt;
+
+&lt;p&gt;Let’s take a look at the service side code.&lt;/p&gt;
+
+&lt;p&gt;The nova-api service is an wigi server, you can find the code from:&lt;/p&gt;
+
+&lt;p&gt;nova /api/openstack/compute/servers.py&lt;/p&gt;
+
+&lt;p&gt;The handle function is    &lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;def create(self, req, body):
+    &quot;&quot;&quot;Creates a new server for a given user.&quot;&quot;&quot;
+…   
+(instances, resv_id) = self.compute_api.create(context,
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;After doing so many check, it finally calls the function of create() which defined in compute_api&lt;/p&gt;
+
+&lt;p&gt;The code locates at nova/compute/api.py&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    @hooks.add_hook(&quot;create_instance&quot;)
+def create(self, context, instance_type,
+...
+        return self._create_instance(
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;some validation and option are done in _create_instance function.
+Then calling &lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;self.compute_task_api.build_instances(context,
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;compute_task_api is an rpc request to nova-conductor service.&lt;/p&gt;
+
+&lt;p&gt;Go to nova/conductor/manager.py, We will find the function    &lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;def build_instances(self, context, instances, image, filter_properties,
+… 
+       hosts = self.scheduler_rpcapi.select_destinations(context,
+…
+       self.compute_rpcapi.build_and_run_instance(context,
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It mainly does 2 things, send request to nova-scheduler to find a host which the newly created instances will run on, and send request to these hosts’ to run an instance.&lt;/p&gt;
+
+&lt;p&gt;Then we go to nova/compute/manager.py, which will receive the request from conductor , and it&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;def build_and_run_instance(self, context, instance, image, request_spec,
+                 filter_properties, admin_password=None,
+                 injected_files=None, requested_networks=None,
+                 security_groups=None, block_device_mapping=None,
+                 node=None, limits=None):
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;this function will call the really hypervisor driver to create instance.
+each service does its own job.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;nova-api: accept the url request and response to client&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;nova-conductor: talk to db, improve the security of db access&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;nova-scheduler: find an specify node though some require specification.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;nova-compute: do the really compute node related job.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;not all of request will call all the services.&lt;/p&gt;
+
+&lt;h3 id=&quot;shelve-an-instance&quot;&gt;Shelve an instance&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;[tagett@stack-01 devstack]$ nova list
++--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
+| ID                                   | Name      | Status            | Task State | Power State | Networks                          |
++--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
+| 00be783d-bef5-46b1-bfdc-316618c76e92 | t2        | ACTIVE            | -          | Running     | private=192.168.1.82              |
++--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then shelve an instance:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[tagett@stack-01 devstack]$ nova --debug shelve t2
+REQ: curl -i &#39;http://cloudcontroller:5000/v2.0/tokens&#39; …
+REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers&#39;…
+REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/r&#39;…
+
+…
+REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/00be783d-bef5-46b1-bfdc-316618c76e92/action&#39; -X POST -H &quot;Accept: application/json&quot; -H &quot;Content-Type: application/json&quot; -H &quot;User-Agent: python-novaclient&quot; -H &quot;X-Auth-Project-Id: admin&quot; -H &quot;X-Auth-Token: {SHA1}0634ea0ef1c3994e1f496c5d8890d32610cf11e9&quot; -d &#39;{&quot;shelve&quot;: null}&#39;…
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There are 4 requests you can see from above, you will see the full request url with request body and also you can find the response code body.&lt;/p&gt;
+
+&lt;p&gt;The requests are:&lt;/p&gt;
+
+&lt;p&gt;1)  Get token from keystone server with username and password, keystone will return the token, and also the tenant id.&lt;/p&gt;
+
+&lt;p&gt;2)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token. You will get all instances the tenant created.&lt;/p&gt;
+
+&lt;p&gt;3)  Another request is check if the instance you want to shelve (00be783d-bef5-46b1-bfdc-316618c76e92) exist.&lt;/p&gt;
+
+&lt;p&gt;4)  Do shelve, you can see it is an post request with the body  -d ‘{“shelve”: null}’&lt;/p&gt;
+
+&lt;p&gt;At last , nova api return an response as:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;RESP: [202] CaseInsensitiveDict({&#39;date&#39;: &#39;Thu, 18 Sep 2014 04:03:09 GMT&#39;, &#39;content-length&#39;: &#39;0&#39;, &#39;content-type&#39;: &#39;text/html; charset=UTF-8&#39;, &#39;x-compute-request-id&#39;: &#39;req-4be7dc9a-21da-4050-9310-3ee58ca93569&#39;}) RESP BODY: null
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Server has accepted(202) your request and will do the shelve asynchronous.&lt;/p&gt;
+
+&lt;p&gt;This is what you can see from client side.&lt;/p&gt;
+
+&lt;p&gt;Then here’s the server side.&lt;/p&gt;
+
+&lt;p&gt;The basic service calling sequence is:
+Novaclient -&amp;gt; nova-api -&amp;gt; nova-conductor -&amp;gt; nova-compute&lt;/p&gt;
+
+&lt;p&gt;the api code of shelve is in nova/api/openstack/compute/contrib/shelve.py
+it is an extension of server(as you can see from the request of shelve)
+you can find the follow code:&lt;/p&gt;
+
+&lt;p&gt;nova/api/openstack/compute/contrib/shelve.py :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@wsgi.action(&#39;shelve&#39;)
+def _shelve(self, req, id, body):
+    &quot;&quot;&quot;Move an instance into shelved mode.&quot;&quot;&quot;
+    context = req.environ[&quot;nova.context&quot;]
+    auth_shelve(context)
+
+    instance = self._get_instance(context, id)
+    try:
+        self.compute_api.shelve(context, instance)
+    except exception.InstanceIsLocked as e:
+        raise exc.HTTPConflict(explanation=e.format_message())
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;the api service will call nova compute api ‘s function shelve,
+the code located at nova/compute/api.py&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    if not self.is_volume_backed_instance(context, instance):
+        name = &#39;%s-shelved&#39; % instance[&#39;display_name&#39;]
+        image_meta = self._create_image(context, instance, name,
+                &#39;snapshot&#39;)
+        image_id = image_meta[&#39;id&#39;]
+        self.compute_rpcapi.shelve_instance(context, instance=instance,
+                image_id=image_id)
+    else:
+        self.compute_rpcapi.shelve_offload_instance(context,
+                instance=instance)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;then it make a rpc call though compute_rpcapi, the message will send to amqp server and 
+it will received by compute manager, to let’s check the code in nova/compute/manager.py&lt;/p&gt;
+
+&lt;p&gt;so the data flow will be&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/shelve.png&quot; alt=&quot;shevle&quot; /&gt;&lt;/p&gt;
+</content>
+ </entry>
  
  <entry>
    <title>Deploy Openstack With Packstack</title>
