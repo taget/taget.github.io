@@ -44,11 +44,11 @@ Nova client -> nova-api -> nova-conductor->nova-scheduler->nova-compute
 
 ![boot](/assets/images/boot.png)
 
-Each one is an service(a running process), they call each other through rpc server.
+Each one is a service(a running process), they call each other through rpc server.
 
 Let’s take a look at the service side code.
 
-The nova-api service is an wigi server, you can find the code from:
+The nova-api service is a wigi server, you can find the code from:
 
 nova /api/openstack/compute/servers.py
 
@@ -73,7 +73,7 @@ Then calling
 
     self.compute_task_api.build_instances(context,
 
-compute_task_api is an rpc request to nova-conductor service.
+compute_task_api is a rpc request to nova-conductor service.
 
 Go to nova/conductor/manager.py, We will find the function    
 
@@ -101,7 +101,7 @@ each service does its own job.
 
 - nova-conductor: talk to db, improve the security of db access
 
-- nova-scheduler: find an specify node though some require specification.
+- nova-scheduler: find a specify node though some require specification.
 
 - nova-compute: do the really compute node related job.
 
@@ -137,9 +137,9 @@ The requests are:
 
 3)  Another request is check if the instance you want to shelve (00be783d-bef5-46b1-bfdc-316618c76e92) exist.
 
-4)  Do shelve, you can see it is an post request with the body  -d '{"shelve": null}'
+4)  Do shelve, you can see it is a post request with the body  -d '{"shelve": null}'
 
-At last , nova api return an response as:
+At last , nova api return a response as:
 
     RESP: [202] CaseInsensitiveDict({'date': 'Thu, 18 Sep 2014 04:03:09 GMT', 'content-length': '0', 'content-type': 'text/html; charset=UTF-8', 'x-compute-request-id': 'req-4be7dc9a-21da-4050-9310-3ee58ca93569'})
 RESP BODY: null
