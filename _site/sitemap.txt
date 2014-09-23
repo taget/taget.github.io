@@ -8,11 +8,11 @@ http://taget.github.io/rss.xml
 http://taget.github.io/sitemap.txt
 http://taget.github.io/tags.html
 
+http://taget.github.io/2014/09/23/vhost
 http://taget.github.io/lessons/2014/09/18/request-data-flow
 http://taget.github.io/lessons/2014/08/14/deploy-openstack-with-packstack
 http://taget.github.io/2014/06/13/linux-interrupt
 http://taget.github.io/lessons/2014/06/10/use-cloud-image-locally
 http://taget.github.io/lessons/2014/06/09/linux-network-namespace
-http://taget.github.io/lessons/2014/06/06/openstack-start
 http://taget.github.io/2014/06/06/linux-pci
 http://taget.github.io/lessons/2014/06/06/fedora-live-upgrade

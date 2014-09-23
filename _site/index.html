@@ -117,6 +117,7 @@
 
 
 
+
           </ul>
           <form class="navbar-form navbar-right" role="search">
             <div class="form-group">
@@ -127,8 +128,9 @@
         </div><!-- /.navbar-collapse -->
       </nav>
 
-      <div class="container">
-        
+      <div>
+        <div class="container">
+            
 <div class="page-header">
   <h1>改变世界 </h1>
 </div>
@@ -136,6 +138,10 @@
 <div class="row">
   <div class="col-xs-12">
     <ul>
+    
+    <li><span>23 Sep 2014</span> &raquo; <a href="/2014/09/23/vhost">Linux PCI</a></li>
+        Vhost 概述 Linux kernel 中的vhost driver提供了KVM在kernel环境中的virtio设备的模拟。vhost把QEMU模拟设备的代码放在了linux kernel里面，所以设备模拟代码可以直接进入kernel子系统，从而不需要从用户空间通过系统调用陷入内核，减少了由于模拟IO导致的性能下降。 vhost-net是在宿主机上对vhost 网卡的模拟，同样，也有vhost-blk，对block设备的模拟，以及vhost-scsi，对scsi设备的模拟。 vhost 在kernel中的代码位于 drivers/vhost/vhost.c Vhost 驱动模型 vhost driver创建了一个字符设备 /dev/vhost-net，这个设备可以被用户空间打开，并可以被ioctl命令操作。当给一个Qemu进程传递了参数-netdev tap,vhost=on 的时候，QEMU会通过调用几个ioctl命令对这个文件描述符进行一些初始化的工作，然后进行特性的协商，从而宿主机跟客户机的vhost-net driver建立关系。 QEMU代码调用如下： vhost_net_init -&gt; vhost_dev_init -&gt; vhost_net_ack_features 在vhost_net_init中调用了 vhost_dev_init ，打开/dev/vhost-net这个设备，然后返回一个文件描述符作为vhost-net的后端， vhost_dev_init 调用的ioctl命令有 r = ioctl(hdev-&gt;control, VHOST_SET_OWNER, NULL); Kernel 中的定义为： 1. /* Set current process as the (exclusive) owner of this file...<br />
+            <a href="/2014/09/23/vhost">Read more...</a><br /><br />
     
     <li><span>18 Sep 2014</span> &raquo; <a href="/lessons/2014/09/18/request-data-flow">Request Data Flow</a></li>
         Data flow of openstack request This post will talk about the data flow of an openstack request, I will take boot an instance and shelve an instance as example. Assume that you have setup an openstack environment already. Let’s start from nova client, you can put –debug option to nova...<br />
@@ -206,20 +212,6 @@ SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中�
         Linux Network Namespaces Linux kernel在2.6.29中加入了namespaces，用于支持网络的隔离，我们看一下namespace是如何使用的 创建与配置 创建一个名为blue的namespace ip netns add blue 列出所有的namespace ip netns list 分配网络接口到namespace上 我们可以将一对veth中的一个分配到namespace上，将另一个分配到另一个上。 veth的创建如下： ip link add veth0 type veth peer name veth1 这样就创建了一对veth，veth0 和veth1。 veth的作用就像一根网线一样，从一端进入的数据会从另一端出来。 使用 ip link list 查看创建的veth设备。 如果我们想把刚创建的namaespace与global/default namespace连接，我们可以这样做： ip link set veth1 netns blue veth1 从global从消失了,因为这对veth的另一端veth0在default中，这样我们就可以将两个 namespace联系起来了。 使用如下命令查看blue namespace中的连接 ip netns...<br />
             <a href="/lessons/2014/06/09/linux-network-namespace">Read more...</a><br /><br />
     
-    <li><span>06 Jun 2014</span> &raquo; <a href="/lessons/2014/06/06/openstack-start">Openstack Start</a></li>
-        简介
-
-Openstack是什么
-
-Openstack 包含那些组件
-
-从哪儿可以获得Openstack
-
-更多
-
-<br />
-            <a href="/lessons/2014/06/06/openstack-start">Read more...</a><br /><br />
-    
     <li><span>06 Jun 2014</span> &raquo; <a href="/2014/06/06/linux-pci">Linux PCI</a></li>
         PCI 简介 PCI(Periheral Component Interconnect)有三种地址空间：PCI I/O空间、PCI内存地址空间和PCI配置空间。 I/O 空间和内存地址空间由PCI驱动使用。 PCI配置空间由Linux PCI初始化代码使用，由内核用来进行配置，比如中断号和I/O内存基址空间。 PCI 桥 一共有三种PCI桥： * HOST/PCI桥（HOST bridge）：用于连接CPU和PCI的桥设备 * PCI/ISA桥 （ISA bridge）：用于连接PCI总线和ISA总线的桥 * PCI-PCI桥（PCI-PCI bridge）：用于PCI总线的扩展 下图展示了pci桥的层次连接： 在使用PCI设备之前,Linux Knerle需要对其进行枚举和配置。 枚举的结果就将是一个树状的结构，根是HOST/PCI桥。 配置PCI设备 Linux kernel 对PCI配置空间进行配置。这个PCI配置空间其实就是一些寄存器，称为配置寄存器组。 当PCI设备尚未被激活的时候，它只对配置事务响应。设备上是不会有I/O端口映射到计算机的内存空间的。 中断也会被禁止。 PCI设备的地址空间 所有PCI设备的配置空间寄存器组都采用相同的地址，由总线的PCI桥在访问时附加上其他条件进行区分。 对于CPU来说，它通过一个统一的入口地址HOST/PCI桥，即树型结构的根发出指令，再由相应的PCI桥间接地完成具体的读写。 这个PCI桥（或者称PCI总线）包含两个寄存器，’地址寄存器’和’数据寄存器’，CPU向’地址寄存器’写入要访问的地址，然后通过’数据寄存器’读取数据。 地址寄存器的地址组成： 总线号：设备号：功能号：寄存器号 示例，lspci 输出： 0000 : PCI domain (each domain can contain up...<br />
             <a href="/2014/06/06/linux-pci">Read more...</a><br /><br />
@@ -246,10 +238,13 @@ $sudo fedup-cli --network 20 --addrepo f20=http://mirrors.163.com/fedora/release
 </div>
 
 
+        </div>
+        <div id="side">
+            <p>blaaa</p>
+        </div>
       </div>
 
     </div>
-
     <div id="footer">
       <div class="container">
         <p>&copy; 2014 Eli Qiao

@@ -4,13 +4,139 @@
  <title>Eli Qiao's Blog</title>
  <link href="http://taget.github.io/" rel="self"/>
  <link href="http://taget.github.io"/>
- <updated>2014-09-18T10:20:06+00:00</updated>
+ <updated>2014-09-23T11:43:45+00:00</updated>
  <id>http://taget.github.io</id>
  <author>
    <name>Eli Qiao</name>
    <email>qiaoliyong@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Linux PCI</title>
+   <link href="http://taget.github.io/2014/09/23/vhost"/>
+   <updated>2014-09-23T00:00:00+00:00</updated>
+   <id>http://taget.github.io/2014/09/23/vhost</id>
+   <content type="html">
+&lt;h1 id=&quot;vhost-&quot;&gt;Vhost 概述&lt;/h1&gt;
+&lt;p&gt;Linux kernel 中的vhost driver提供了KVM在kernel环境中的virtio设备的模拟。vhost把QEMU模拟设备的代码放在了linux kernel里面，所以设备模拟代码可以直接进入kernel子系统，从而不需要从用户空间通过系统调用陷入内核，减少了由于模拟IO导致的性能下降。&lt;/p&gt;
+
+&lt;p&gt;vhost-net是在宿主机上对vhost 网卡的模拟，同样，也有vhost-blk，对block设备的模拟，以及vhost-scsi，对scsi设备的模拟。&lt;/p&gt;
+
+&lt;p&gt;vhost 在kernel中的代码位于 drivers/vhost/vhost.c&lt;/p&gt;
+
+&lt;h2 id=&quot;vhost--1&quot;&gt;Vhost 驱动模型&lt;/h2&gt;
+
+&lt;p&gt;vhost driver创建了一个字符设备 /dev/vhost-net，这个设备可以被用户空间打开，并可以被ioctl命令操作。当给一个Qemu进程传递了参数-netdev tap,vhost=on 的时候，QEMU会通过调用几个ioctl命令对这个文件描述符进行一些初始化的工作，然后进行特性的协商，从而宿主机跟客户机的vhost-net driver建立关系。
+QEMU代码调用如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;vhost_net_init -&amp;gt; vhost_dev_init -&amp;gt; vhost_net_ack_features
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在vhost_net_init中调用了 vhost_dev_init ，打开/dev/vhost-net这个设备，然后返回一个文件描述符作为vhost-net的后端，
+vhost_dev_init 调用的ioctl命令有&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;r = ioctl(hdev-&amp;gt;control, VHOST_SET_OWNER, NULL);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kernel 中的定义为：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;1.  /* Set current process as the (exclusive) owner of this file descriptor.  This  
+2.   * must be called before any other vhost command.  Further calls to  
+3.   * VHOST_OWNER_SET fail until VHOST_OWNER_RESET is called. */  
+4.  #define VHOST_SET_OWNER _IO(VHOST_VIRTIO, 0x01)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后获取VHOST支持的特性&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;r = ioctl(hdev-&amp;gt;control, VHOST_GET_FEATURES, &amp;amp;features);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;同样，kernel中的定义为：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;1.  /* Features bitmask for forward compatibility.  Transport bits are used for  
+2.   * vhost specific features. */  
+3.  #define VHOST_GET_FEATURES      _IOR(VHOST_VIRTIO, 0x00, __u64)  
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;QEMU中用vhost_net 这个数据结构代表打开的vhost_net 实例：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;1.  struct vhost_net {  
+2.      struct vhost_dev dev;  
+3.      struct vhost_virtqueue vqs[2];  
+4.      int backend;  
+5.      NetClientState *nc;  
+6.  };  
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;使用ioctl设置完后，QEMU注册memory_listener 回调函数:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;1.  hdev-&amp;gt;memory_listener = (MemoryListener) {  
+2.      .begin = vhost_begin,  
+3.      .commit = vhost_commit,  
+4.      .region_add = vhost_region_add,  
+5.      .region_del = vhost_region_del,  
+6.      .region_nop = vhost_region_nop,  
+7.      .log_start = vhost_log_start,  
+8.      .log_stop = vhost_log_stop,  
+9.      .log_sync = vhost_log_sync,  
+10.     .log_global_start = vhost_log_global_start,  
+11.     .log_global_stop = vhost_log_global_stop,  
+12.     .eventfd_add = vhost_eventfd_add,  
+13.     .eventfd_del = vhost_eventfd_del,  
+14.     .priority = 10  
+15. };  
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;vhost_region_add 是为了将QEMU guest的地址空间映射到vhost driver&lt;/p&gt;
+
+&lt;p&gt;最后进行特性的协商:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;1.  /* Set sane init value. Override when guest acks. */  
+2.  vhost_net_ack_features(net, 0); 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;与此同时，kernel中要创建一个kernel thread 用于处理I/O事件和设备的模拟。
+kernel代码 drivers/vhost/vhost.c：&lt;/p&gt;
+
+&lt;p&gt;在vhost_dev_set_owner中，调用了这个函数用于创建worker线程（线程名字为vhost-qemu+进程pid）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/vhost-net.jpg&quot; alt=&quot;arc of vhost&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;kernel-virtio-&quot;&gt;Kernel 中的virtio 模拟&lt;/h2&gt;
+
+&lt;p&gt;vhost并没有完全模拟一个pci设备，相反，它只把自己限制在对virtqueue的操作上。&lt;/p&gt;
+
+&lt;p&gt;worker thread 一直等待virtqueue的数据，对于vhost-net来说，当virtqueue的tx队列中有数据了，它会把数据传送到与其相关联的tap设备文件描述符上。&lt;/p&gt;
+
+&lt;p&gt;相反，worker thread 也要进行tap文件描述符的轮询，对于vhost-net，当tap文件描述符有数据到来时候，worker thread会被唤醒，然后将数据传送到rx队列中。&lt;/p&gt;
+
+&lt;h2 id=&quot;vhost&quot;&gt;vhost的在用户空间的接口&lt;/h2&gt;
+
+&lt;p&gt;数据已经准备好了，如何通知客户机呢？&lt;/p&gt;
+
+&lt;p&gt;从vhost模块的依赖性可以得知，vhost这个模块并没有依赖于kvm 模块，也就是说，理论上其他应用只要实现了和vhost接口，也可以调用vhost来进行数据传输的加速。&lt;/p&gt;
+
+&lt;p&gt;但也正是因为vhost跟kvm模块没什么关系，当QEMU（KVM）guest把数据放到tx队列（virtqueue）上之后，它是没有办法直接通知vhost数据准备了的。&lt;/p&gt;
+
+&lt;p&gt;不过，vhost 设置了一个eventfd文件描述符，这个文件描述符被前面我们提到的worker thread 监控，所以QEMU可以通过向eventfd发送消息告诉vhost数据准备好了。&lt;/p&gt;
+
+&lt;p&gt;QEMU的做法是这样的，在QEMU中注册一个ioeventfd，当guest 发生I/O退出了，会被KVM捕捉到，KVM向vhost发送eventfd从而告知vhost KVM guest已经准备好数据了。由于 worker thread监控这个eventfd，在收到消息后，知道guest已经把数据放到了tx队列，可以进行对戏&lt;/p&gt;
+
+&lt;p&gt;vhost通过发出一个guest中断，通过KVM提供的irqevent，告诉guest需要传送的buffer已经放到了rx virtqueue了，QEMU（KVM）注册这个irq PCI事件，得知内核空间的数据准备好了，调用guest驱动进行数据的读取。&lt;/p&gt;
+
+&lt;p&gt;所以，总的来说 vhost 实例需要知道的有三样&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;guest的内存映射，也就是virtqueue，用于数据的传输&lt;/li&gt;
+  &lt;li&gt;qemu kick eventfd，vhost接收guest发送的消息，该消息被worker thread捕获&lt;/li&gt;
+  &lt;li&gt;call event（irqfd）用于通知guest&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;以上三点在QEMU初始化的时候准备好，数据的传输只在内核空间就完成了，不需要QEMU进行干预，所以这也是为什么使用vhost进行传输数据高效的原因。&lt;/p&gt;
+
+</content>
+ </entry>
  
  <entry>
    <title>Request Data Flow</title>
@@ -54,11 +180,11 @@ REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/boot.png&quot; alt=&quot;boot&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Each one is an service(a running process), they call each other through rpc server.&lt;/p&gt;
+&lt;p&gt;Each one is a service(a running process), they call each other through rpc server.&lt;/p&gt;
 
 &lt;p&gt;Let’s take a look at the service side code.&lt;/p&gt;
 
-&lt;p&gt;The nova-api service is an wigi server, you can find the code from:&lt;/p&gt;
+&lt;p&gt;The nova-api service is a wigi server, you can find the code from:&lt;/p&gt;
 
 &lt;p&gt;nova /api/openstack/compute/servers.py&lt;/p&gt;
 
@@ -86,7 +212,7 @@ Then calling &lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;self.compute_task_api.build_instances(context,
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;compute_task_api is an rpc request to nova-conductor service.&lt;/p&gt;
+&lt;p&gt;compute_task_api is a rpc request to nova-conductor service.&lt;/p&gt;
 
 &lt;p&gt;Go to nova/conductor/manager.py, We will find the function    &lt;/p&gt;
 
@@ -119,7 +245,7 @@ each service does its own job.&lt;/p&gt;
     &lt;p&gt;nova-conductor: talk to db, improve the security of db access&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
-    &lt;p&gt;nova-scheduler: find an specify node though some require specification.&lt;/p&gt;
+    &lt;p&gt;nova-scheduler: find a specify node though some require specification.&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;nova-compute: do the really compute node related job.&lt;/p&gt;
@@ -159,9 +285,9 @@ REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361
 
 &lt;p&gt;3)  Another request is check if the instance you want to shelve (00be783d-bef5-46b1-bfdc-316618c76e92) exist.&lt;/p&gt;
 
-&lt;p&gt;4)  Do shelve, you can see it is an post request with the body  -d ‘{“shelve”: null}’&lt;/p&gt;
+&lt;p&gt;4)  Do shelve, you can see it is a post request with the body  -d ‘{“shelve”: null}’&lt;/p&gt;
 
-&lt;p&gt;At last , nova api return an response as:&lt;/p&gt;
+&lt;p&gt;At last , nova api return a response as:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;RESP: [202] CaseInsensitiveDict({&#39;date&#39;: &#39;Thu, 18 Sep 2014 04:03:09 GMT&#39;, &#39;content-length&#39;: &#39;0&#39;, &#39;content-type&#39;: &#39;text/html; charset=UTF-8&#39;, &#39;x-compute-request-id&#39;: &#39;req-4be7dc9a-21da-4050-9310-3ee58ca93569&#39;}) RESP BODY: null
 &lt;/code&gt;&lt;/pre&gt;
@@ -720,24 +846,6 @@ ip netns exec &amp;lt;network namespace&amp;gt; &amp;lt;command to run against t
 &lt;h3 id=&quot;section-1&quot;&gt;连接到物理网络&lt;/h3&gt;
 
 &lt;p&gt;可以使用linux bridge 或者 openvswith bridge。将物理接口和veth的一个加入到同一个bridge就可以了。&lt;/p&gt;
-
-</content>
- </entry>
- 
- <entry>
-   <title>Openstack Start</title>
-   <link href="http://taget.github.io/lessons/2014/06/06/openstack-start"/>
-   <updated>2014-06-06T00:00:00+00:00</updated>
-   <id>http://taget.github.io/lessons/2014/06/06/openstack-start</id>
-   <content type="html">&lt;h2 id=&quot;section&quot;&gt;简介&lt;/h2&gt;
-
-&lt;h3 id=&quot;openstack&quot;&gt;Openstack是什么&lt;/h3&gt;
-
-&lt;h3 id=&quot;openstack-&quot;&gt;Openstack 包含那些组件&lt;/h3&gt;
-
-&lt;h3 id=&quot;openstack-1&quot;&gt;从哪儿可以获得Openstack&lt;/h3&gt;
-
-&lt;h3 id=&quot;section-1&quot;&gt;更多&lt;/h3&gt;
 
 </content>
  </entry>
