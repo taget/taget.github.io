@@ -5,54 +5,47 @@
         <description>Eli Qiao's Blog - Eli Qiao</description>
         <link>http://taget.github.io</link>
         <link>http://taget.github.io</link>
-        <lastBuildDate>2014-09-23T12:20:46+00:00</lastBuildDate>
-        <pubDate>2014-09-23T12:20:46+00:00</pubDate>
+        <lastBuildDate>2015-07-03T15:35:19+08:00</lastBuildDate>
+        <pubDate>2015-07-03T15:35:19+08:00</pubDate>
         <ttl>1800</ttl>
 
 
         <item>
-                <title>Linux PCI</title>
-                <description>
-&lt;h1 id=&quot;vhost-&quot;&gt;Vhost 概述&lt;/h1&gt;
+                <title>Vhost net</title>
+                <description>&lt;h1 id='vhost_'&gt;Vhost 概述&lt;/h1&gt;
+
 &lt;p&gt;Linux kernel 中的vhost driver提供了KVM在kernel环境中的virtio设备的模拟。vhost把QEMU模拟设备的代码放在了linux kernel里面，所以设备模拟代码可以直接进入kernel子系统，从而不需要从用户空间通过系统调用陷入内核，减少了由于模拟IO导致的性能下降。&lt;/p&gt;
 
 &lt;p&gt;vhost-net是在宿主机上对vhost 网卡的模拟，同样，也有vhost-blk，对block设备的模拟，以及vhost-scsi，对scsi设备的模拟。&lt;/p&gt;
 
 &lt;p&gt;vhost 在kernel中的代码位于 drivers/vhost/vhost.c&lt;/p&gt;
 
-&lt;h2 id=&quot;vhost--1&quot;&gt;Vhost 驱动模型&lt;/h2&gt;
+&lt;h2 id='vhost_'&gt;Vhost 驱动模型&lt;/h2&gt;
 
-&lt;p&gt;vhost driver创建了一个字符设备 /dev/vhost-net，这个设备可以被用户空间打开，并可以被ioctl命令操作。当给一个Qemu进程传递了参数-netdev tap,vhost=on 的时候，QEMU会通过调用几个ioctl命令对这个文件描述符进行一些初始化的工作，然后进行特性的协商，从而宿主机跟客户机的vhost-net driver建立关系。
-QEMU代码调用如下：&lt;/p&gt;
+&lt;p&gt;vhost driver创建了一个字符设备 /dev/vhost-net，这个设备可以被用户空间打开，并可以被ioctl命令操作。当给一个Qemu进程传递了参数-netdev tap,vhost=on 的时候，QEMU会通过调用几个ioctl命令对这个文件描述符进行一些初始化的工作，然后进行特性的协商，从而宿主机跟客户机的vhost-net driver建立关系。 QEMU代码调用如下：&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;vhost_net_init -&amp;gt; vhost_dev_init -&amp;gt; vhost_net_ack_features
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;vhost_net_init -&amp;gt; vhost_dev_init -&amp;gt; vhost_net_ack_features&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;在vhost_net_init中调用了 vhost_dev_init ，打开/dev/vhost-net这个设备，然后返回一个文件描述符作为vhost-net的后端，
-vhost_dev_init 调用的ioctl命令有&lt;/p&gt;
+&lt;p&gt;在vhost_net_init中调用了 vhost_dev_init ，打开/dev/vhost-net这个设备，然后返回一个文件描述符作为vhost-net的后端， vhost_dev_init 调用的ioctl命令有&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;r = ioctl(hdev-&amp;gt;control, VHOST_SET_OWNER, NULL);
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;r = ioctl(hdev-&amp;gt;control, VHOST_SET_OWNER, NULL);&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Kernel 中的定义为：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;1.  /* Set current process as the (exclusive) owner of this file descriptor.  This  
 2.   * must be called before any other vhost command.  Further calls to  
 3.   * VHOST_OWNER_SET fail until VHOST_OWNER_RESET is called. */  
-4.  #define VHOST_SET_OWNER _IO(VHOST_VIRTIO, 0x01)
-&lt;/code&gt;&lt;/pre&gt;
+4.  #define VHOST_SET_OWNER _IO(VHOST_VIRTIO, 0x01)&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;然后获取VHOST支持的特性&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;r = ioctl(hdev-&amp;gt;control, VHOST_GET_FEATURES, &amp;amp;features);
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;r = ioctl(hdev-&amp;gt;control, VHOST_GET_FEATURES, &amp;amp;features);&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;同样，kernel中的定义为：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;1.  /* Features bitmask for forward compatibility.  Transport bits are used for  
 2.   * vhost specific features. */  
-3.  #define VHOST_GET_FEATURES      _IOR(VHOST_VIRTIO, 0x00, __u64)  
-&lt;/code&gt;&lt;/pre&gt;
+3.  #define VHOST_GET_FEATURES      _IOR(VHOST_VIRTIO, 0x00, __u64)  &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;QEMU中用vhost_net 这个数据结构代表打开的vhost_net 实例：&lt;/p&gt;
 
@@ -61,8 +54,7 @@ vhost_dev_init 调用的ioctl命令有&lt;/p&gt;
 3.      struct vhost_virtqueue vqs[2];  
 4.      int backend;  
 5.      NetClientState *nc;  
-6.  };  
-&lt;/code&gt;&lt;/pre&gt;
+6.  };  &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;使用ioctl设置完后，QEMU注册memory_listener 回调函数:&lt;/p&gt;
 
@@ -80,25 +72,22 @@ vhost_dev_init 调用的ioctl命令有&lt;/p&gt;
 12.     .eventfd_add = vhost_eventfd_add,  
 13.     .eventfd_del = vhost_eventfd_del,  
 14.     .priority = 10  
-15. };  
-&lt;/code&gt;&lt;/pre&gt;
+15. };  &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;vhost_region_add 是为了将QEMU guest的地址空间映射到vhost driver&lt;/p&gt;
 
 &lt;p&gt;最后进行特性的协商:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;1.  /* Set sane init value. Override when guest acks. */  
-2.  vhost_net_ack_features(net, 0); 
-&lt;/code&gt;&lt;/pre&gt;
+2.  vhost_net_ack_features(net, 0); &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;与此同时，kernel中要创建一个kernel thread 用于处理I/O事件和设备的模拟。
-kernel代码 drivers/vhost/vhost.c：&lt;/p&gt;
+&lt;p&gt;与此同时，kernel中要创建一个kernel thread 用于处理I/O事件和设备的模拟。 kernel代码 drivers/vhost/vhost.c：&lt;/p&gt;
 
 &lt;p&gt;在vhost_dev_set_owner中，调用了这个函数用于创建worker线程（线程名字为vhost-qemu+进程pid）&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/vhost-net.jpg&quot; alt=&quot;arc of vhost&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt='arc of vhost' src='/assets/images/vhost-net.jpg' /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;kernel-virtio-&quot;&gt;Kernel 中的virtio 模拟&lt;/h2&gt;
+&lt;h2 id='kernel_virtio_'&gt;Kernel 中的virtio 模拟&lt;/h2&gt;
 
 &lt;p&gt;vhost并没有完全模拟一个pci设备，相反，它只把自己限制在对virtqueue的操作上。&lt;/p&gt;
 
@@ -106,7 +95,7 @@ kernel代码 drivers/vhost/vhost.c：&lt;/p&gt;
 
 &lt;p&gt;相反，worker thread 也要进行tap文件描述符的轮询，对于vhost-net，当tap文件描述符有数据到来时候，worker thread会被唤醒，然后将数据传送到rx队列中。&lt;/p&gt;
 
-&lt;h2 id=&quot;vhost&quot;&gt;vhost的在用户空间的接口&lt;/h2&gt;
+&lt;h2 id='vhost'&gt;vhost的在用户空间的接口&lt;/h2&gt;
 
 &lt;p&gt;数据已经准备好了，如何通知客户机呢？&lt;/p&gt;
 
@@ -123,22 +112,22 @@ kernel代码 drivers/vhost/vhost.c：&lt;/p&gt;
 &lt;p&gt;所以，总的来说 vhost 实例需要知道的有三样&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;guest的内存映射，也就是virtqueue，用于数据的传输&lt;/li&gt;
-  &lt;li&gt;qemu kick eventfd，vhost接收guest发送的消息，该消息被worker thread捕获&lt;/li&gt;
-  &lt;li&gt;call event（irqfd）用于通知guest&lt;/li&gt;
+&lt;li&gt;guest的内存映射，也就是virtqueue，用于数据的传输&lt;/li&gt;
+
+&lt;li&gt;qemu kick eventfd，vhost接收guest发送的消息，该消息被worker thread捕获&lt;/li&gt;
+
+&lt;li&gt;call event（irqfd）用于通知guest&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;以上三点在QEMU初始化的时候准备好，数据的传输只在内核空间就完成了，不需要QEMU进行干预，所以这也是为什么使用vhost进行传输数据高效的原因。&lt;/p&gt;
-
-</description>
+&lt;p&gt;以上三点在QEMU初始化的时候准备好，数据的传输只在内核空间就完成了，不需要QEMU进行干预，所以这也是为什么使用vhost进行传输数据高效的原因。&lt;/p&gt;</description>
                 <link>http://taget.github.io/2014/09/23/vhost</link>
                 <guid>http://taget.github.io/2014/09/23/vhost</guid>
-                <pubDate>2014-09-23T00:00:00+00:00</pubDate>
+                <pubDate>2014-09-23T00:00:00+08:00</pubDate>
         </item>
 
         <item>
                 <title>Request Data Flow</title>
-                <description>&lt;h2 id=&quot;data-flow-of-openstack-request&quot;&gt;Data flow of openstack request&lt;/h2&gt;
+                <description>&lt;h2 id='data_flow_of_openstack_request'&gt;Data flow of openstack request&lt;/h2&gt;
 
 &lt;p&gt;This post will talk about the data flow of an openstack request, I will take boot an instance and shelve an instance as example.&lt;/p&gt;
 
@@ -146,26 +135,25 @@ kernel代码 drivers/vhost/vhost.c：&lt;/p&gt;
 
 &lt;p&gt;Let’s start from nova client, you can put &lt;code&gt;–debug&lt;/code&gt; option to nova client then you will see the request url nova client sent.&lt;/p&gt;
 
-&lt;h3 id=&quot;boot-an-instance&quot;&gt;Boot an instance&lt;/h3&gt;
+&lt;h3 id='boot_an_instance'&gt;Boot an instance&lt;/h3&gt;
 
 &lt;pre&gt;&lt;code&gt;[tagett@stack-01 devstack]$ nova --debug boot t3 --flavor m1.nano --image  44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf --nic net-id=b745b2c6-db16-40ab-8ad7-af6da0e5e699
 …
-REQ: curl -i &#39;http://cloudcontroller:5000/v2.0/tokens&#39;
-REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/images/44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf&#39;
-REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/flavors/m1.nano&#39;
-REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers&#39; -X POST -H &quot;Accept: application/json&quot; -H &quot;Content-Type: application/json&quot; -H &quot;User-Agent: python-novaclient&quot; -H &quot;X-Auth-Project-Id: admin&quot; -H &quot;X-Auth-Token: {SHA1}15d9e554b7456f1043732bb8df72d1521c5f6aa1&quot; -d &#39;{&quot;server&quot;: {&quot;name&quot;: &quot;t3&quot;, &quot;imageRef&quot;: &quot;44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf&quot;, &quot;flavorRef&quot;: &quot;42&quot;, &quot;max_count&quot;: 1, &quot;min_count&quot;: 1, &quot;networks&quot;: [{&quot;uuid&quot;: &quot;b745b2c6-db16-40ab-8ad7-af6da0e5e699&quot;}]}}&#39;
-…
-&lt;/code&gt;&lt;/pre&gt;
+REQ: curl -i &amp;#39;http://cloudcontroller:5000/v2.0/tokens&amp;#39;
+REQ: curl -i &amp;#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/images/44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf&amp;#39;
+REQ: curl -i &amp;#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/flavors/m1.nano&amp;#39;
+REQ: curl -i &amp;#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers&amp;#39; -X POST -H &amp;quot;Accept: application/json&amp;quot; -H &amp;quot;Content-Type: application/json&amp;quot; -H &amp;quot;User-Agent: python-novaclient&amp;quot; -H &amp;quot;X-Auth-Project-Id: admin&amp;quot; -H &amp;quot;X-Auth-Token: {SHA1}15d9e554b7456f1043732bb8df72d1521c5f6aa1&amp;quot; -d &amp;#39;{&amp;quot;server&amp;quot;: {&amp;quot;name&amp;quot;: &amp;quot;t3&amp;quot;, &amp;quot;imageRef&amp;quot;: &amp;quot;44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf&amp;quot;, &amp;quot;flavorRef&amp;quot;: &amp;quot;42&amp;quot;, &amp;quot;max_count&amp;quot;: 1, &amp;quot;min_count&amp;quot;: 1, &amp;quot;networks&amp;quot;: [{&amp;quot;uuid&amp;quot;: &amp;quot;b745b2c6-db16-40ab-8ad7-af6da0e5e699&amp;quot;}]}}&amp;#39;
+…&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The requests from nova client are:&lt;/p&gt;
 
-&lt;p&gt;1)  Get token from keystone server with username and password, keystone will return the token, and also the tenant id.&lt;/p&gt;
+&lt;p&gt;1) Get token from keystone server with username and password, keystone will return the token, and also the tenant id.&lt;/p&gt;
 
-&lt;p&gt;2)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if image existed. &lt;/p&gt;
+&lt;p&gt;2) Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if image existed.&lt;/p&gt;
 
-&lt;p&gt;3)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if favors existed.&lt;/p&gt;
+&lt;p&gt;3) Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if favors existed.&lt;/p&gt;
 
-&lt;p&gt;4)  Request to create an instance, all request data are put in the request body, check –d section.&lt;/p&gt;
+&lt;p&gt;4) Request to create an instance, all request data are put in the request body, check –d section.&lt;/p&gt;
 
 &lt;p&gt;Nova client help you to make all requests together, the most important one is the 4), if you are sure about all resources, you can simply run 4) to create an instance.&lt;/p&gt;
 
@@ -173,7 +161,7 @@ REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361
 
 &lt;p&gt;Nova client -&amp;gt; nova-api -&amp;gt; nova-conductor-&amp;gt;nova-scheduler-&amp;gt;nova-compute&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/boot.png&quot; alt=&quot;boot&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt='boot' src='/assets/images/boot.png' /&gt;&lt;/p&gt;
 
 &lt;p&gt;Each one is a service(a running process), they call each other through rpc server.&lt;/p&gt;
 
@@ -183,40 +171,35 @@ REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361
 
 &lt;p&gt;nova /api/openstack/compute/servers.py&lt;/p&gt;
 
-&lt;p&gt;The handle function is    &lt;/p&gt;
+&lt;p&gt;The handle function is&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;def create(self, req, body):
-    &quot;&quot;&quot;Creates a new server for a given user.&quot;&quot;&quot;
+    &amp;quot;&amp;quot;&amp;quot;Creates a new server for a given user.&amp;quot;&amp;quot;&amp;quot;
 …   
-(instances, resv_id) = self.compute_api.create(context,
-&lt;/code&gt;&lt;/pre&gt;
+(instances, resv_id) = self.compute_api.create(context,&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;After doing so many check, it finally calls the function of create() which defined in compute_api&lt;/p&gt;
 
 &lt;p&gt;The code locates at nova/compute/api.py&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    @hooks.add_hook(&quot;create_instance&quot;)
+&lt;pre&gt;&lt;code&gt;    @hooks.add_hook(&amp;quot;create_instance&amp;quot;)
 def create(self, context, instance_type,
 ...
-        return self._create_instance(
-&lt;/code&gt;&lt;/pre&gt;
+        return self._create_instance(&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;some validation and option are done in _create_instance function.
-Then calling &lt;/p&gt;
+&lt;p&gt;some validation and option are done in &lt;em&gt;create&lt;/em&gt;instance function. Then calling&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;self.compute_task_api.build_instances(context,
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;self.compute_task_api.build_instances(context,&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;compute_task_api is a rpc request to nova-conductor service.&lt;/p&gt;
 
-&lt;p&gt;Go to nova/conductor/manager.py, We will find the function    &lt;/p&gt;
+&lt;p&gt;Go to nova/conductor/manager.py, We will find the function&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;def build_instances(self, context, instances, image, filter_properties,
 … 
        hosts = self.scheduler_rpcapi.select_destinations(context,
 …
-       self.compute_rpcapi.build_and_run_instance(context,
-&lt;/code&gt;&lt;/pre&gt;
+       self.compute_rpcapi.build_and_run_instance(context,&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;It mainly does 2 things, send request to nova-scheduler to find a host which the newly created instances will run on, and send request to these hosts’ to run an instance.&lt;/p&gt;
 
@@ -226,66 +209,66 @@ Then calling &lt;/p&gt;
                  filter_properties, admin_password=None,
                  injected_files=None, requested_networks=None,
                  security_groups=None, block_device_mapping=None,
-                 node=None, limits=None):
-&lt;/code&gt;&lt;/pre&gt;
+                 node=None, limits=None):&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;this function will call the really hypervisor driver to create instance.
-each service does its own job.&lt;/p&gt;
+&lt;p&gt;this function will call the really hypervisor driver to create instance. each service does its own job.&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;nova-api: accept the url request and response to client&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;nova-conductor: talk to db, improve the security of db access&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;nova-scheduler: find a specify node though some require specification.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;nova-compute: do the really compute node related job.&lt;/p&gt;
-  &lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;nova-api: accept the url request and response to client&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;nova-conductor: talk to db, improve the security of db access&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;nova-scheduler: find a specify node though some require specification.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;nova-compute: do the really compute node related job.&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;not all of request will call all the services.&lt;/p&gt;
 
-&lt;h3 id=&quot;shelve-an-instance&quot;&gt;Shelve an instance&lt;/h3&gt;
+&lt;h3 id='shelve_an_instance'&gt;Shelve an instance&lt;/h3&gt;
 
 &lt;pre&gt;&lt;code&gt;[tagett@stack-01 devstack]$ nova list
 +--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
 | ID                                   | Name      | Status            | Task State | Power State | Networks                          |
 +--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
 | 00be783d-bef5-46b1-bfdc-316618c76e92 | t2        | ACTIVE            | -          | Running     | private=192.168.1.82              |
-+--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
-&lt;/code&gt;&lt;/pre&gt;
++--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Then shelve an instance:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;[tagett@stack-01 devstack]$ nova --debug shelve t2
-REQ: curl -i &#39;http://cloudcontroller:5000/v2.0/tokens&#39; …
-REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers&#39;…
-REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/r&#39;…
+REQ: curl -i &amp;#39;http://cloudcontroller:5000/v2.0/tokens&amp;#39; …
+REQ: curl -i &amp;#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers&amp;#39;…
+REQ: curl -i &amp;#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/r&amp;#39;…
 
 …
-REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/00be783d-bef5-46b1-bfdc-316618c76e92/action&#39; -X POST -H &quot;Accept: application/json&quot; -H &quot;Content-Type: application/json&quot; -H &quot;User-Agent: python-novaclient&quot; -H &quot;X-Auth-Project-Id: admin&quot; -H &quot;X-Auth-Token: {SHA1}0634ea0ef1c3994e1f496c5d8890d32610cf11e9&quot; -d &#39;{&quot;shelve&quot;: null}&#39;…
-&lt;/code&gt;&lt;/pre&gt;
+REQ: curl -i &amp;#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/00be783d-bef5-46b1-bfdc-316618c76e92/action&amp;#39; -X POST -H &amp;quot;Accept: application/json&amp;quot; -H &amp;quot;Content-Type: application/json&amp;quot; -H &amp;quot;User-Agent: python-novaclient&amp;quot; -H &amp;quot;X-Auth-Project-Id: admin&amp;quot; -H &amp;quot;X-Auth-Token: {SHA1}0634ea0ef1c3994e1f496c5d8890d32610cf11e9&amp;quot; -d &amp;#39;{&amp;quot;shelve&amp;quot;: null}&amp;#39;…&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;There are 4 requests you can see from above, you will see the full request url with request body and also you can find the response code body.&lt;/p&gt;
 
 &lt;p&gt;The requests are:&lt;/p&gt;
 
-&lt;p&gt;1)  Get token from keystone server with username and password, keystone will return the token, and also the tenant id.&lt;/p&gt;
+&lt;p&gt;1) Get token from keystone server with username and password, keystone will return the token, and also the tenant id.&lt;/p&gt;
 
-&lt;p&gt;2)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token. You will get all instances the tenant created.&lt;/p&gt;
+&lt;p&gt;2) Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token. You will get all instances the tenant created.&lt;/p&gt;
 
-&lt;p&gt;3)  Another request is check if the instance you want to shelve (00be783d-bef5-46b1-bfdc-316618c76e92) exist.&lt;/p&gt;
+&lt;p&gt;3) Another request is check if the instance you want to shelve (00be783d-bef5-46b1-bfdc-316618c76e92) exist.&lt;/p&gt;
 
-&lt;p&gt;4)  Do shelve, you can see it is a post request with the body  -d ‘{“shelve”: null}’&lt;/p&gt;
+&lt;p&gt;4) Do shelve, you can see it is a post request with the body -d &amp;#8216;{&amp;#8220;shelve&amp;#8221;: null}&amp;#8217;&lt;/p&gt;
 
 &lt;p&gt;At last , nova api return a response as:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;RESP: [202] CaseInsensitiveDict({&#39;date&#39;: &#39;Thu, 18 Sep 2014 04:03:09 GMT&#39;, &#39;content-length&#39;: &#39;0&#39;, &#39;content-type&#39;: &#39;text/html; charset=UTF-8&#39;, &#39;x-compute-request-id&#39;: &#39;req-4be7dc9a-21da-4050-9310-3ee58ca93569&#39;}) RESP BODY: null
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;RESP: [202] CaseInsensitiveDict({&amp;#39;date&amp;#39;: &amp;#39;Thu, 18 Sep 2014 04:03:09 GMT&amp;#39;, &amp;#39;content-length&amp;#39;: &amp;#39;0&amp;#39;, &amp;#39;content-type&amp;#39;: &amp;#39;text/html; charset=UTF-8&amp;#39;, &amp;#39;x-compute-request-id&amp;#39;: &amp;#39;req-4be7dc9a-21da-4050-9310-3ee58ca93569&amp;#39;})&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;RESP BODY: null&lt;/p&gt;
 
 &lt;p&gt;Server has accepted(202) your request and will do the shelve asynchronous.&lt;/p&gt;
 
@@ -293,87 +276,88 @@ REQ: curl -i &#39;http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361
 
 &lt;p&gt;Then here’s the server side.&lt;/p&gt;
 
-&lt;p&gt;The basic service calling sequence is:
-Novaclient -&amp;gt; nova-api -&amp;gt; nova-conductor -&amp;gt; nova-compute&lt;/p&gt;
+&lt;p&gt;The basic service calling sequence is: Novaclient -&amp;gt; nova-api -&amp;gt; nova-conductor -&amp;gt; nova-compute&lt;/p&gt;
 
-&lt;p&gt;the api code of shelve is in nova/api/openstack/compute/contrib/shelve.py
-it is an extension of server(as you can see from the request of shelve)
-you can find the follow code:&lt;/p&gt;
+&lt;p&gt;the api code of shelve is in nova/api/openstack/compute/contrib/shelve.py it is an extension of server(as you can see from the request of shelve) you can find the follow code:&lt;/p&gt;
 
 &lt;p&gt;nova/api/openstack/compute/contrib/shelve.py :&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;@wsgi.action(&#39;shelve&#39;)
+&lt;pre&gt;&lt;code&gt;@wsgi.action(&amp;#39;shelve&amp;#39;)
 def _shelve(self, req, id, body):
-    &quot;&quot;&quot;Move an instance into shelved mode.&quot;&quot;&quot;
-    context = req.environ[&quot;nova.context&quot;]
+    &amp;quot;&amp;quot;&amp;quot;Move an instance into shelved mode.&amp;quot;&amp;quot;&amp;quot;
+    context = req.environ[&amp;quot;nova.context&amp;quot;]
     auth_shelve(context)
 
     instance = self._get_instance(context, id)
     try:
         self.compute_api.shelve(context, instance)
     except exception.InstanceIsLocked as e:
-        raise exc.HTTPConflict(explanation=e.format_message())
-&lt;/code&gt;&lt;/pre&gt;
+        raise exc.HTTPConflict(explanation=e.format_message())&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;the api service will call nova compute api ‘s function shelve,
-the code located at nova/compute/api.py&lt;/p&gt;
+&lt;p&gt;the api service will call nova compute api ‘s function shelve, the code located at nova/compute/api.py&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;    if not self.is_volume_backed_instance(context, instance):
-        name = &#39;%s-shelved&#39; % instance[&#39;display_name&#39;]
+        name = &amp;#39;%s-shelved&amp;#39; % instance[&amp;#39;display_name&amp;#39;]
         image_meta = self._create_image(context, instance, name,
-                &#39;snapshot&#39;)
-        image_id = image_meta[&#39;id&#39;]
+                &amp;#39;snapshot&amp;#39;)
+        image_id = image_meta[&amp;#39;id&amp;#39;]
         self.compute_rpcapi.shelve_instance(context, instance=instance,
                 image_id=image_id)
     else:
         self.compute_rpcapi.shelve_offload_instance(context,
-                instance=instance)
-&lt;/code&gt;&lt;/pre&gt;
+                instance=instance)&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;then it make a rpc call though compute_rpcapi, the message will send to amqp server and 
-it will received by compute manager, to let’s check the code in nova/compute/manager.py&lt;/p&gt;
+&lt;p&gt;then it make a rpc call though compute_rpcapi, the message will send to amqp server and it will received by compute manager, to let’s check the code in nova/compute/manager.py&lt;/p&gt;
 
 &lt;p&gt;so the data flow will be&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/shelve.png&quot; alt=&quot;shevle&quot; /&gt;&lt;/p&gt;
-</description>
+&lt;p&gt;&lt;img alt='shevle' src='/assets/images/shelve.png' /&gt;&lt;/p&gt;</description>
                 <link>http://taget.github.io/lessons/2014/09/18/request-data-flow</link>
                 <guid>http://taget.github.io/lessons/2014/09/18/request-data-flow</guid>
-                <pubDate>2014-09-18T00:00:00+00:00</pubDate>
+                <pubDate>2014-09-18T00:00:00+08:00</pubDate>
         </item>
 
         <item>
                 <title>Deploy Openstack With Packstack</title>
-                <description>&lt;h2 id=&quot;packstackopenstack&quot;&gt;使用packstack部署openstack&lt;/h2&gt;
+                <description>&lt;h2 id='packstackopenstack'&gt;使用packstack部署openstack&lt;/h2&gt;
 
 &lt;p&gt;本文将介绍如何使用Redhat提供的packstack部署openstack&lt;/p&gt;
 
-&lt;h3 id=&quot;openstack-&quot;&gt;Openstack 简介&lt;/h3&gt;
+&lt;h3 id='openstack_'&gt;Openstack 简介&lt;/h3&gt;
+
 &lt;p&gt;openstack 是一整套资源管理软件的集合，也是当前最热的开源虚拟化管理软件之一，有一个全球139个国家将近两万开发者参与的开源社区（www.openstack.org）作为支持。openstack项目的目的是快速建设一个稳定可靠的公有云或私有云系统。整个项目涵盖了计算，存储，网络以及前端展现等关于云管理的全部方面，包含了众多子项目。&lt;/p&gt;
 
 &lt;p&gt;主要包含了一下几个子项目:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;OpenStack Compute (code-name Nova) 计算服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Networking (code-name Neutron) 网络服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Object Storage (code-name Swift) 对象存储服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Block Storage (code-name Cinder) 块设备存储服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Identity (code-name Keystone) 认证服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Image Service (code-name Glance) 镜像文件服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Dashboard (code-name Horizon) 仪表盘服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Telemetry (code-name Ceilometer) 告警服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Orchestration (code-name Heat) 流程服务&lt;/li&gt;
-  &lt;li&gt;OpenStack Database (code-name Trove) 数据库服务&lt;/li&gt;
+&lt;li&gt;OpenStack Compute (code-name Nova) 计算服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Networking (code-name Neutron) 网络服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Object Storage (code-name Swift) 对象存储服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Block Storage (code-name Cinder) 块设备存储服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Identity (code-name Keystone) 认证服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Image Service (code-name Glance) 镜像文件服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Dashboard (code-name Horizon) 仪表盘服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Telemetry (code-name Ceilometer) 告警服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Orchestration (code-name Heat) 流程服务&lt;/li&gt;
+
+&lt;li&gt;OpenStack Database (code-name Trove) 数据库服务&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;openstack的特点各个服务之间通过统一的REST风格的API调用，实现系统的松耦合。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/openstack-whole.jpg&quot; alt=&quot;whole picture of openstack&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt='whole picture of openstack' src='/assets/images/openstack-whole.jpg' /&gt;&lt;/p&gt;
 
-&lt;p&gt;图中实线代表client api调用，虚线代表各个组件之间通过REST API进行通信。从图中可以看出，openstack的整体架构是松耦合的，这样做的好处是，各个组件的开发人员可以只关注各自的领域，对各自领域的修改不会影响到其他开发人员。不过，从另一方面来讲，这种松耦合的架构也给整个系统的维护带来了一定的困难。运维人员可能要掌握更多的系统相关的知识去调试出了问题的组件。
-关于openstack更多信息，读者可以查阅参考文献中的opesntack社区连接，用以获得更多最新的动态。&lt;/p&gt;
+&lt;p&gt;图中实线代表client api调用，虚线代表各个组件之间通过REST API进行通信。从图中可以看出，openstack的整体架构是松耦合的，这样做的好处是，各个组件的开发人员可以只关注各自的领域，对各自领域的修改不会影响到其他开发人员。不过，从另一方面来讲，这种松耦合的架构也给整个系统的维护带来了一定的困难。运维人员可能要掌握更多的系统相关的知识去调试出了问题的组件。 关于openstack更多信息，读者可以查阅参考文献中的opesntack社区连接，用以获得更多最新的动态。&lt;/p&gt;
 
-&lt;h3 id=&quot;openstack&quot;&gt;部署openstack&lt;/h3&gt;
+&lt;h3 id='openstack'&gt;部署openstack&lt;/h3&gt;
 
 &lt;p&gt;各种发行版提供了各自openstack的安装部署方式，基于fedora 的RDO，我们可以快速部署openstack环境到一个物理机上，然后对其进行计算节点扩展。&lt;/p&gt;
 
@@ -381,34 +365,29 @@ it will received by compute manager, to let’s check the code in nova/compute/m
 
 &lt;p&gt;&lt;strong&gt;使用RDO部署单节点&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;笔者使用环境是fedora20，只需要简单几条命令即可完成openstack的penstack的allinone模式，即部署openstack环境到一台单机上（fedora20环境下要打开Selinux, ‘sudo setenforce permissive’)&lt;/p&gt;
+&lt;p&gt;笔者使用环境是fedora20，只需要简单几条命令即可完成openstack的penstack的allinone模式，即部署openstack环境到一台单机上（fedora20环境下要打开Selinux, &amp;#8216;sudo setenforce permissive&amp;#8217;)&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;sudo yum update –y
 sudo yum install -y openstack-packstack
-packstack --allinone
-&lt;/code&gt;&lt;/pre&gt;
+packstack --allinone&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;packstack 配置过程中需要安装一些软件，比如说puppet，所以需要确保主机接入了网络，
-同时确保sshd service是启动状态，按照提示输入root账号的密码。
-packstack会帮我们创建mysql数据库，创建用户密码等，如果整个安装过程没有报错，整个环境就搭建好了。&lt;/p&gt;
+&lt;p&gt;packstack 配置过程中需要安装一些软件，比如说puppet，所以需要确保主机接入了网络， 同时确保sshd service是启动状态，按照提示输入root账号的密码。 packstack会帮我们创建mysql数据库，创建用户密码等，如果整个安装过程没有报错，整个环境就搭建好了。&lt;/p&gt;
 
-&lt;p&gt;fedora20的openstack-puppet-modules-2013.2-9.1.fc20.noarch包中有一个bug，社区已经有了fix，读者可以自行按照该链接进行修改
-/usr/share/openstack-puppet/modules/neutron/lib/puppet/provider/neutron_subnet/neutron.rb
-https://git.openstack.org/cgit/stackforge/puppet-neutron/commit/?id=78428c844f73bf585a8f8a3bdf615ba2a0e8983b
-安装过程中如果出现任何错误，读者可以根据屏幕输出的提示查看日志文件，手动修复后，删除生成的answers文件，重新运行packstack –allinone 即可。
-如果一切安装顺利，在root目录下会生成以下3个文件&lt;/p&gt;
+&lt;p&gt;fedora20的openstack-puppet-modules-2013.2-9.1.fc20.noarch包中有一个bug，社区已经有了fix，读者可以自行按照该链接进行修改 /usr/share/openstack-puppet/modules/neutron/lib/puppet/provider/neutron_subnet/neutron.rb https://git.openstack.org/cgit/stackforge/puppet-neutron/commit/?id=78428c844f73bf585a8f8a3bdf615ba2a0e8983b 安装过程中如果出现任何错误，读者可以根据屏幕输出的提示查看日志文件，手动修复后，删除生成的answers文件，重新运行packstack &amp;#8211;allinone 即可。 如果一切安装顺利，在root目录下会生成以下3个文件&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;keystonerc_admin  keystonerc_demo   packstack-answers-20140624-142948.txt
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;keystonerc_admin  keystonerc_demo   packstack-answers-20140624-142948.txt&lt;/code&gt;&lt;/pre&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;
-- 关于packstack的一些已知的workaroud，请查阅如下链接http://openstack.redhat.com/Workarounds
-- fedora 20 的openstack-dashboard 与 python-django 1.6.0 以上的版本不兼容，所以需要使用1.5版本的 python-django-1.5.5-2.fc20.noarch，这时，先引入packstack生成的环境变量文件&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;关于packstack的一些已知的workaroud，请查阅如下链接http://openstack.redhat.com/Workarounds&lt;/li&gt;
+
+&lt;li&gt;fedora 20 的openstack-dashboard 与 python-django 1.6.0 以上的版本不兼容，所以需要使用1.5版本的 python-django-1.5.5-2.fc20.noarch，这时，先引入packstack生成的环境变量文件&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/blockquote&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@stack-kvm110] # source .keystonerc_admin
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[root@stack-kvm110] # source .keystonerc_admin&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;然后使用nova-manage service list 命令查看nova服务的状态。&lt;/p&gt;
 
@@ -418,38 +397,28 @@ nova-conductor   stack-kvm110        internal          enabled    :-)   2014-06-
 nova-cert        stack-kvm110         internal         enabled    :-)   2014-06-27 02:12:07
 nova-consoleauth stack-kvm110         internal          enabled    :-)   2014-06-27 02:12:08
 nova-scheduler   stack-kvm110         internal          enabled    :-)   2014-06-27 02:12:12
-nova-compute    stack-kvm110         nova            enabled    :-)   2014-06-27 02:12:13
-&lt;/code&gt;&lt;/pre&gt;
+nova-compute    stack-kvm110         nova            enabled    :-)   2014-06-27 02:12:13&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;从命令输出可以看出在stack-kvm主机上运行的服务。
-或者通过浏览器访问dashboard，在浏览器打开http://$YOURIP/dashboard 就可以访问安装好的openstack前端dashboard。用户名是admin，密码通过查看keystonerc_admin
-可以获得，此时，控制节点，网络节点和计算节点都安装在一台服务器上了。&lt;/p&gt;
+&lt;p&gt;从命令输出可以看出在stack-kvm主机上运行的服务。 或者通过浏览器访问dashboard，在浏览器打开http://$YOURIP/dashboard 就可以访问安装好的openstack前端dashboard。用户名是admin，密码通过查看keystonerc_admin 可以获得，此时，控制节点，网络节点和计算节点都安装在一台服务器上了。&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;添加新的计算点&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;接下来继续添加新的节点用做计算节点（9.181.129.64）。
-打开packstack生成的packstack-answers-20140624-142948.txt 文件，编辑
-修改网卡名字，为了让新添加的节点可以与之前创建的节点共享同一个似有网
-需要修改CONFIG_NOVA_COMPUTE_PRIVIF和CONFIG_NOVA_NETWORK_PRIVIF，把他们指向一个物理网卡（第二块网卡）&lt;/p&gt;
+&lt;p&gt;接下来继续添加新的节点用做计算节点（9.181.129.64）。 打开packstack生成的packstack-answers-20140624-142948.txt 文件，编辑 修改网卡名字，为了让新添加的节点可以与之前创建的节点共享同一个似有网 需要修改CONFIG_NOVA_COMPUTE_PRIVIF和CONFIG_NOVA_NETWORK_PRIVIF，把他们指向一个物理网卡（第二块网卡）&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;# Private interface for Flat DHCP on the Nova compute servers
 CONFIG_NOVA_COMPUTE_PRIVIF=eth1
 # Private interface for network manager on the Nova network server
-CONFIG_NOVA_NETWORK_PRIVIF=eth1
-&lt;/code&gt;&lt;/pre&gt;
+CONFIG_NOVA_NETWORK_PRIVIF=eth1&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;另外，修改&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;# A comma separated list of IP addresses on which to install the Nova
 # Compute services
-CONFIG_NOVA_COMPUTE_HOSTS=192.168.1.64
-&lt;/code&gt;&lt;/pre&gt;
+CONFIG_NOVA_COMPUTE_HOSTS=192.168.1.64&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;同时保证 CONFIG_NOVA_NETWORK_HOSTS 是第一个节点192.168.1.110。
-重新运行&lt;/p&gt;
+&lt;p&gt;同时保证 CONFIG_NOVA_NETWORK_HOSTS 是第一个节点192.168.1.110。 重新运行&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;sudo packstack --answer-file=packstack-answers-20140624-142948.txt
-&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;sudo packstack --answer-file=packstack-answers-20140624-142948.txt&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;安装完成后，在controler节点上通过nova-manage service 可以看到新增加的compute节点stack-01。&lt;/p&gt;
 
@@ -460,37 +429,32 @@ nova-cert        stack-kvm110             internal         enabled    :-)   2014
 nova-consoleauth stack-kvm110             internal         enabled    :-)   2014-06-27 02:23:28
 nova-scheduler   stack-kvm110             internal         enabled    :-)   2014-06-27 02:23:32
 nova-compute     stack-kvm110            nova          enabled    :-)   2014-06-27 02:23:33
-**nova-compute     stack-01               nova          enabled    :-)   2014-06-27 02:23:27**
-&lt;/code&gt;&lt;/pre&gt;
+**nova-compute     stack-01               nova          enabled    :-)   2014-06-27 02:23:27**&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;&lt;strong&gt;配置网络节点和计算节点的物理网络&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;本文中使用openvswitch 作为虚拟网络的驱动插件，图2是网络节点与单台计算节点的物理连接图。&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/neutron-phy.jpg&quot; alt=&quot;neutron 网络物理连接&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt='neutron 网络物理连接' src='/assets/images/neutron-phy.jpg' /&gt;&lt;/p&gt;
 
 &lt;p&gt;如图所示，绿色的连接是数据网络，专门用于租户的虚拟机之间的连接。灰色的是管理网络，用于openstack各个组件之间的网络通信。管理节点通过eth2网卡接入到外网路由器，也是整个openstack系统外网流量的出口。网络节点以及计算节点的neutron配置。&lt;/p&gt;
 
-&lt;p&gt;本文中使用neutron配置虚拟网络，网络节点与控制节点安装在同一节点机器。
-从图中我们可以看出openstack的网络分为：&lt;/p&gt;
+&lt;p&gt;本文中使用neutron配置虚拟网络，网络节点与控制节点安装在同一节点机器。 从图中我们可以看出openstack的网络分为：&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;管理网，用于openstack 各个组件之间的通信&lt;/li&gt;
-  &lt;li&gt;数据网， 虚拟机之间的通信&lt;/li&gt;
+&lt;li&gt;管理网，用于openstack 各个组件之间的通信 - 数据网， 虚拟机之间的通信&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;&lt;strong&gt;vlan方式&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;使用这种方式的前提是，连接计算节点和网络节点的交换机配置了或者支持vlan功能。
-网络节点：&lt;/p&gt;
+&lt;p&gt;使用这种方式的前提是，连接计算节点和网络节点的交换机配置了或者支持vlan功能。 网络节点：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini：
 [ovs]
 tenant_network_type = vlan
 network_vlan_ranges = physnet1,physnet2:101:110
 integration_bridge = br-int
-bridge_mappings = physnet1:br-ex,physnet2:br-eth1
-&lt;/code&gt;&lt;/pre&gt;
+bridge_mappings = physnet1:br-ex,physnet2:br-eth1&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;计算节点：&lt;/p&gt;
 
@@ -498,17 +462,15 @@ bridge_mappings = physnet1:br-ex,physnet2:br-eth1
 tenant_network_type = vlan
 network_vlan_ranges = physnet2:101:110
 integration_bridge = br-int
-bridge_mappings = physnet2:br-eth1
-&lt;/code&gt;&lt;/pre&gt;
+bridge_mappings = physnet2:br-eth1&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;图3中蓝框所示为openvswitch网桥&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/logic-network.jpg&quot; alt=&quot;虚拟网络的逻辑连接&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt='虚拟网络的逻辑连接' src='/assets/images/logic-network.jpg' /&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;gre方式&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;与vlan方式类似，只不过在网络节点与计算节点之间建立了条专用通道
-网络节点：&lt;/p&gt;
+&lt;p&gt;与vlan方式类似，只不过在网络节点与计算节点之间建立了条专用通道 网络节点：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini：
 enable_tunneling = True
@@ -516,8 +478,7 @@ tunnel_type = gre
 tunnel_id_ranges = 1:1000
 local_ip = 9.181.129.110
 integration_bridge = br-int
-tunnel_bridge = br-tun
-&lt;/code&gt;&lt;/pre&gt;
+tunnel_bridge = br-tun&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;计算节点：&lt;/p&gt;
 
@@ -526,11 +487,9 @@ tunnel_type = gre
 tunnel_id_ranges = 1:1000
 local_ip = 9.181.129.64
 integration_bridge = br-int
-tunnel_bridge = br-tun
-&lt;/code&gt;&lt;/pre&gt;
+tunnel_bridge = br-tun&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;使用neutron命令创建虚拟网络
-创建public网络，子网以及路由器&lt;/p&gt;
+&lt;p&gt;使用neutron命令创建虚拟网络 创建public网络，子网以及路由器&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ neutron router-create router01
 $ neutron net-create public01 \
@@ -539,8 +498,7 @@ $ neutron net-create public01 \
 --router:external=True
 $ neutron subnet-create --name public01_subnet01 \
 --gateway 192.168.1.1 public01 192.168.1.0、24 --disable-dhcp
-$ neutron router-gateway-set router01 public01
-&lt;/code&gt;&lt;/pre&gt;
+$ neutron router-gateway-set router01 public01&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;创建内部网络net01以及子网&lt;/p&gt;
 
@@ -549,8 +507,7 @@ $ neutron router-gateway-set router01 public01
 --provider:physical_network physnet2 \
 --provider:segmentation_id 101
 $ neutron subnet-create --tenant-id $tenant --name net01_subnet01 net01 192.168.101.0/24
-$ neutron router-interface-add router01 net01_subnet01
-&lt;/code&gt;&lt;/pre&gt;
+$ neutron router-interface-add router01 net01_subnet01&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;同理创建内部网络net02以及子网&lt;/p&gt;
 
@@ -559,8 +516,7 @@ $ neutron router-interface-add router01 net01_subnet01
 --provider:physical_network physnet2 \
 --provider:segmentation_id 102
 $ neutron subnet-create --tenant-id $tenant --name net02_subnet01 net01 192.168.102.0/24
-$ neutron router-interface-add router01 net02_subnet01
-&lt;/code&gt;&lt;/pre&gt;
+$ neutron router-interface-add router01 net02_subnet01&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;创建基于gre的私有网络net03和子网以及net04和子网&lt;/p&gt;
 
@@ -568,88 +524,73 @@ $ neutron router-interface-add router01 net02_subnet01
 $ neutron subnet-create --name net03_subnet01 net03 192.168.103.0/24
 
 $ neutron net-create net04 --provider:network_type gre --provider:physical_network physnet2 tunnel_id_ranges = 1:1000 enable_tunneling = True
-$ neutron subnet-create --name net04_subnet01 Net04 192.168.104.0/24
-&lt;/code&gt;&lt;/pre&gt;
+$ neutron subnet-create --name net04_subnet01 Net04 192.168.104.0/24&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/dashboard.jpg&quot; alt=&quot;openstack dashboard&quot; /&gt;&lt;/p&gt;
-
-</description>
+&lt;p&gt;&lt;img alt='openstack dashboard' src='/assets/images/dashboard.jpg' /&gt;&lt;/p&gt;</description>
                 <link>http://taget.github.io/lessons/2014/08/14/deploy-openstack-with-packstack</link>
                 <guid>http://taget.github.io/lessons/2014/08/14/deploy-openstack-with-packstack</guid>
-                <pubDate>2014-08-14T00:00:00+00:00</pubDate>
+                <pubDate>2014-08-14T00:00:00+08:00</pubDate>
         </item>
 
         <item>
                 <title>Linux Interrupt</title>
-                <description>
-&lt;h2 id=&quot;linux-&quot;&gt;Linux 中断&lt;/h2&gt;
-&lt;p&gt;中断硬件发起，外部设备与cpu通信的一种方式，相对于cpu轮询，中断是更好的方式。
-中断设备与cpu的物理连接方式如下：&lt;/p&gt;
+                <description>&lt;h2 id='linux_'&gt;Linux 中断&lt;/h2&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/pic-cpu-connection.jpeg&quot; alt=&quot;pci bridge connection&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;中断硬件发起，外部设备与cpu通信的一种方式，相对于cpu轮询，中断是更好的方式。 中断设备与cpu的物理连接方式如下：&lt;/p&gt;
 
-&lt;p&gt;一般来说，外设并不直接与cpu相连接，而是通过一个叫’中断控制器’硬件连接。这个中断控制器是可被编程配置的。
-所以又称它为’可编程中断控制器’（PIC）。外设向中断控制器发起中断，然后，’中断控制器’告诉cpu有中断到来。
-cpu去读取中断控制器（PIC）产生的软中断号。
-初始化需要配置PIC，配置内容包括：&lt;/p&gt;
+&lt;p&gt;&lt;img alt='pci bridge connection' src='/assets/images/pic-cpu-connection.jpeg' /&gt;&lt;/p&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;中断触发的电信号类型（水平还是边沿触发）&lt;/li&gt;
-  &lt;li&gt;将外设的引脚编号映射到cpu可见的软件中断号irq&lt;/li&gt;
-  &lt;li&gt;屏蔽掉某些外部设备的中断触发&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;一般来说，外设并不直接与cpu相连接，而是通过一个叫&amp;#8217;中断控制器&amp;#8217;硬件连接。这个中断控制器是可被编程配置的。 所以又称它为&amp;#8217;可编程中断控制器&amp;#8217;（PIC）。外设向中断控制器发起中断，然后，&amp;#8217;中断控制器&amp;#8217;告诉cpu有中断到来。 cpu去读取中断控制器（PIC）产生的软中断号。 初始化需要配置PIC，配置内容包括：&lt;/p&gt;
 
-&lt;h2 id=&quot;section&quot;&gt;中断向量表&lt;/h2&gt;
+&lt;p&gt;1. 中断触发的电信号类型（水平还是边沿触发） 2. 将外设的引脚编号映射到cpu可见的软件中断号irq 3. 屏蔽掉某些外部设备的中断触发&lt;/p&gt;
 
-&lt;p&gt;中断向量表是cpu的内部概念。当发生 ‘异常’ 或者 ‘内部中断’时，cpu会查看中断向量表该异常或者中断对应的处理函数地址。&lt;/p&gt;
+&lt;h2 id='id5'&gt;中断向量表&lt;/h2&gt;
 
-&lt;h2 id=&quot;section-1&quot;&gt;通用中断处理函数&lt;/h2&gt;
+&lt;p&gt;中断向量表是cpu的内部概念。当发生 &amp;#8216;异常&amp;#8217; 或者 &amp;#8216;内部中断&amp;#8217;时，cpu会查看中断向量表该异常或者中断对应的处理函数地址。&lt;/p&gt;
 
-&lt;p&gt;通常，当发生外部设备中断时，外设向中断控制器产生一个中断，中断控制器生成一个软件中断信号通知cpu。cpu发现是一个外部
-中断，他会查询中断向量表中的某一表项去处理该中断。该表项对应的就是通用中断处理函数的入口地址。操作系统会提供这个通
-用中断处理函数的定义。&lt;/p&gt;
+&lt;h2 id='id6'&gt;通用中断处理函数&lt;/h2&gt;
+
+&lt;p&gt;通常，当发生外部设备中断时，外设向中断控制器产生一个中断，中断控制器生成一个软件中断信号通知cpu。cpu发现是一个外部 中断，他会查询中断向量表中的某一表项去处理该中断。该表项对应的就是通用中断处理函数的入口地址。操作系统会提供这个通 用中断处理函数的定义。&lt;/p&gt;
 
 &lt;p&gt;通用中断处理函数的处理过程大致为：&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;获取软件中断号irq，一般使用汇编编写。&lt;/li&gt;
-  &lt;li&gt;调用do_irq，c函数编写&lt;/li&gt;
+&lt;li&gt;获取软件中断号irq，一般使用汇编编写。&lt;/li&gt;
+
+&lt;li&gt;调用do_irq，c函数编写&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;所以，当一个外部设备产生中断后，到cpu响应该中断的流程如下：
-1. 外设触发一个中断
-2. 中断控制器（PIC）获取中断号并报告给cpu
-3. cpu得知这是一个外部中断，它去查找他的中断向量表，找到通用中断处理函数的地址
-4. cpu调用中断处理函数，通过向PIC查询软中断号
-5. 中断处理函数通过软中断号找到该外设注册的中断处理子函数（由驱动提供,在irq_desc数组中）&lt;/p&gt;
+&lt;p&gt;所以，当一个外部设备产生中断后，到cpu响应该中断的流程如下： 1. 外设触发一个中断&lt;/p&gt;
 
-&lt;h2 id=&quot;hardirq--softirq&quot;&gt;HARDIRQ 和 SOFTIRQ&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;中断控制器（PIC）获取中断号并报告给cpu&lt;/li&gt;
 
-&lt;p&gt;当cpu在响应一个中断的时候，如果有新的中断到来了，如何处理呢？
-cpu为了处理这种情况，将中断处理分成了上半部和下半部。
-HARDIRQ在中断关闭情况下执行，他的执行时间尽可能短
-SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中断处理器，一般驱动程序可以将耗时部分放在此部分执行。&lt;/p&gt;
+&lt;li&gt;cpu得知这是一个外部中断，它去查找他的中断向量表，找到通用中断处理函数的地址&lt;/li&gt;
 
-</description>
+&lt;li&gt;cpu调用中断处理函数，通过向PIC查询软中断号&lt;/li&gt;
+
+&lt;li&gt;中断处理函数通过软中断号找到该外设注册的中断处理子函数（由驱动提供,在irq_desc数组中）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id='hardirq__softirq'&gt;HARDIRQ 和 SOFTIRQ&lt;/h2&gt;
+
+&lt;p&gt;当cpu在响应一个中断的时候，如果有新的中断到来了，如何处理呢？ cpu为了处理这种情况，将中断处理分成了上半部和下半部。 HARDIRQ在中断关闭情况下执行，他的执行时间尽可能短 SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中断处理器，一般驱动程序可以将耗时部分放在此部分执行。&lt;/p&gt;</description>
                 <link>http://taget.github.io/2014/06/13/linux-interrupt</link>
                 <guid>http://taget.github.io/2014/06/13/linux-interrupt</guid>
-                <pubDate>2014-06-13T00:00:00+00:00</pubDate>
+                <pubDate>2014-06-13T00:00:00+08:00</pubDate>
         </item>
 
         <item>
                 <title>Use Cloud Image Locally</title>
-                <description>&lt;h1 id=&quot;cloud&quot;&gt;如何在本地使用cloud镜像&lt;/h1&gt;
+                <description>&lt;h1 id='cloud'&gt;如何在本地使用cloud镜像&lt;/h1&gt;
 
-&lt;p&gt;fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可以直接下载并将其运行为一个虚拟机实例。
-但是这些cloud镜像文件默认磁盘分区大小可能无法满足我们的需求，而且，默认是不提供通过密码访问的方式访问虚拟机。
-本文将介绍如何快速修该磁盘分区大小以及访问虚拟机。
-本文中使用的环境为fedora 20，并且需要libguestfs-tools提供的工具，使用如下命令安装。&lt;/p&gt;
+&lt;p&gt;fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可以直接下载并将其运行为一个虚拟机实例。 但是这些cloud镜像文件默认磁盘分区大小可能无法满足我们的需求，而且，默认是不提供通过密码访问的方式访问虚拟机。 本文将介绍如何快速修该磁盘分区大小以及访问虚拟机。 本文中使用的环境为fedora 20，并且需要libguestfs-tools提供的工具，使用如下命令安装。&lt;/p&gt;
 
 &lt;p&gt;&lt;code&gt;
     sudo yum install libguestfs-tools -y
 &lt;/code&gt;&lt;/p&gt;
 
-&lt;h3 id=&quot;image163fedora20&quot;&gt;首先获取image，使用国内163网站的镜像服务器下载fedora20的镜像文件:&lt;/h3&gt;
+&lt;h3 id='image163fedora20'&gt;首先获取image，使用国内163网站的镜像服务器下载fedora20的镜像文件:&lt;/h3&gt;
 
 &lt;p&gt;&lt;code&gt;
     wget http://mirrors.163.com/fedora/releases/20/Images/x86_64/Fedora-x86_64-20-20131211.1-sda.qcow2
@@ -657,7 +598,7 @@ SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中�
 
 &lt;p&gt;因为libguestfs工具以来libvirt启动虚拟机来进行编辑镜像文件，所以我们要把镜像文件放在/var/lib/libvirt/images目录下。&lt;/p&gt;
 
-&lt;h3 id=&quot;section&quot;&gt;查看镜像文件大小，并对其进行扩展&lt;/h3&gt;
+&lt;h3 id='id3'&gt;查看镜像文件大小，并对其进行扩展&lt;/h3&gt;
 
 &lt;pre&gt;&lt;code&gt;$ virt-filesystems --long --parts --blkdevs -h -a Fedora-x86_64-20-20131211.1-sda.qcow2 
 Name       Type       MBR  Size  Parent 
@@ -666,13 +607,12 @@ Name       Type       MBR  Size  Parent
 $ virt-df -h  Fedora-x86_64-20-20131211.1-sda.qcow2
 Filesystem                                Size       Used  Available  Use%
 Fedora-x86_64-20-20131211.1-sda.qcow2:/dev/sda1
-                                      1.8G       572M       1.3G   31%
-&lt;/code&gt;&lt;/pre&gt;
+                                      1.8G       572M       1.3G   31%&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;libguestfs不支持in-place修改，所以使用qemu-img命令创建一个30G的磁盘，然后扩展原始镜像，最终会创建一个新的镜像文件&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ qemu-img create -f qcow2 new-disk 30G
-Formatting &#39;new-disk&#39;, fmt=qcow2 size=32212254720 encryption=off cluster_size=65536 lazy_refcounts=off
+Formatting &amp;#39;new-disk&amp;#39;, fmt=qcow2 size=32212254720 encryption=off cluster_size=65536 lazy_refcounts=off
 
 $ virt-resize Fedora-x86_64-20-20131211.1-sda.qcow2 new-disk --expand /dev/sda1
 Examining Fedora-x86_64-20-20131211.1-sda.qcow2 ...
@@ -682,48 +622,45 @@ Examining Fedora-x86_64-20-20131211.1-sda.qcow2 ...
 Summary of changes:
 
 /dev/sda1: This partition will be resized from 1.9G to 30.0G.  The 
-filesystem ext4 on /dev/sda1 will be expanded using the &#39;resize2fs&#39; 
+filesystem ext4 on /dev/sda1 will be expanded using the &amp;#39;resize2fs&amp;#39; 
 method.
 
 **********
 Setting up initial partition table on new-disk ...
 Copying /dev/sda1 ...
  100% ⟦▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒⟧ 00:00
-Expanding /dev/sda1 using the &#39;resize2fs&#39; method ...
+Expanding /dev/sda1 using the &amp;#39;resize2fs&amp;#39; method ...
 
 Resize operation completed with no errors.  Before deleting the old 
-disk, carefully check that the resized disk boots and works correctly
-&lt;/code&gt;&lt;/pre&gt;
+disk, carefully check that the resized disk boots and works correctly&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;如果过程中无错误，原始镜像被扩展到new-disk镜像文件中，再次查看磁盘分区大小,sda1分区变为30G&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ virt-df -h new-disk
 Filesystem                                Size       Used  Available  Use%
-new-disk:/dev/sda1                         30G       573M        29G    2%
-&lt;/code&gt;&lt;/pre&gt;
+new-disk:/dev/sda1                         30G       573M        29G    2%&lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&quot;section-1&quot;&gt;访问虚拟机&lt;/h3&gt;
+&lt;h3 id='id4'&gt;访问虚拟机&lt;/h3&gt;
+
 &lt;p&gt;cloud 镜像文件默认是无法使用密码登陆的，如果想访问虚拟机，如何去做呢？&lt;/p&gt;
 
 &lt;p&gt;有两种方法:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;一种是通过libguestfs 提供的工具修改镜像文件的文件系统&lt;/li&gt;
+&lt;li&gt;一种是通过libguestfs 提供的工具修改镜像文件的文件系统&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;打开文件访问功能并设置密码：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ virt-customize -a new-disk --root-password password:kvm123456 \
---edit &#39;/etc/ssh/sshd_config: s/PasswordAuthentication no/PasswordAuthentication yes/&#39;
+--edit &amp;#39;/etc/ssh/sshd_config: s/PasswordAuthentication no/PasswordAuthentication yes/&amp;#39;
 [   0.0] Examining the guest ...
 [   5.0] Setting a random seed
 [   5.0] Editing: /etc/ssh/sshd_config
 [   5.0] Setting passwords
-[   5.0] Finishing off
-&lt;/code&gt;&lt;/pre&gt;
+[   5.0] Finishing off&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;或者通过注入ssh publick key
-libguestfs还提供了guestmount工具，用于把image镜像mount到某个目录,加入ssh publich key&lt;/p&gt;
+&lt;p&gt;或者通过注入ssh publick key libguestfs还提供了guestmount工具，用于把image镜像mount到某个目录,加入ssh publich key&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ guestmount -a new-disk -i /mnt/guest/
 $ ls /mnt/guest/
@@ -732,18 +669,13 @@ $ touch /mnt/guest/etc/1
 $ echo &amp;lt;&amp;lt; EOF &amp;gt;&amp;gt;/mnt/guest/root/.ssh/authorized_keys 
 {your public key }
 EOF
-$ guestunmount /mnt/guest/
-&lt;/code&gt;&lt;/pre&gt;
+$ guestunmount /mnt/guest/&lt;/code&gt;&lt;/pre&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;第二种方式是通过 cloud-init&lt;/li&gt;
+&lt;li&gt;第二种方式是通过 cloud-init&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;cloud-init 是ubuntu社区的一个项目，当虚拟机系统启动时自动运行，与openstack neutron 配合，通过dhcp服务获取虚拟机ip，访问网络节点
-的80端口获得用户配置的资源，用于配置当前环境。
-本文中我们没有创建用于cloud-init的服务器，当cloud-init没有找到服务器之后，它还会继续探测是否加载了cd-rom（/dev/sr0）设备。
-所以，我们可以准备一个小的用于cloud-init访问的iso文件，在里面配置我们用到的密码或者sshkey。
-具体代码：&lt;/p&gt;
+&lt;p&gt;cloud-init 是ubuntu社区的一个项目，当虚拟机系统启动时自动运行，与openstack neutron 配合，通过dhcp服务获取虚拟机ip，访问网络节点 的80端口获得用户配置的资源，用于配置当前环境。 本文中我们没有创建用于cloud-init的服务器，当cloud-init没有找到服务器之后，它还会继续探测是否加载了cd-rom（/dev/sr0）设备。 所以，我们可以准备一个小的用于cloud-init访问的iso文件，在里面配置我们用到的密码或者sshkey。 具体代码：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ cat meta-data
 instance-id: iid-local01;
@@ -756,8 +688,7 @@ ssh_pwauth: True
 chpasswd: { expire: False }
 
 ssh_authorized_keys:
-  - ssh-rsa ... foo@foo.com (insert ~/.ssh/id_rsa.pub here)
-&lt;/code&gt;&lt;/pre&gt;
+  - ssh-rsa ... foo@foo.com (insert ~/.ssh/id_rsa.pub here)&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;请注意格式。&lt;/p&gt;
 
@@ -769,26 +700,21 @@ ssh_authorized_keys:
 
 &lt;p&gt;启动虚拟机后，cloud-init回自动运行并配置主机。&lt;/p&gt;
 
-&lt;p&gt;关于cloud-init的其他配置使用情况可以参考&lt;a href=&quot;http://cloudinit.readthedocs.org/en/latest/&quot;&gt; Cloud init Document &lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;关于cloud-init的其他配置使用情况可以参考&lt;a href='http://cloudinit.readthedocs.org/en/latest/'&gt;Cloud init Document&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;参考链接：
-http://kimizhang.wordpress.com/2014/03/18/how-to-inject-filemetassh-keyroot-passworduserdataconfig-drive-to-a-vm-during-nova-boot/
-https://www.technovelty.org/linux/running-cloud-images-locally.html
-http://cloudinit.readthedocs.org/en/latest/&lt;/p&gt;
-
-</description>
+&lt;p&gt;参考链接： http://kimizhang.wordpress.com/2014/03/18/how-to-inject-filemetassh-keyroot-passworduserdataconfig-drive-to-a-vm-during-nova-boot/ https://www.technovelty.org/linux/running-cloud-images-locally.html http://cloudinit.readthedocs.org/en/latest/&lt;/p&gt;</description>
                 <link>http://taget.github.io/lessons/2014/06/10/use-cloud-image-locally</link>
                 <guid>http://taget.github.io/lessons/2014/06/10/use-cloud-image-locally</guid>
-                <pubDate>2014-06-10T00:00:00+00:00</pubDate>
+                <pubDate>2014-06-10T00:00:00+08:00</pubDate>
         </item>
 
         <item>
                 <title>Linux Network Namespace</title>
-                <description>&lt;h2 id=&quot;linux-network-namespaces&quot;&gt;Linux Network Namespaces&lt;/h2&gt;
+                <description>&lt;h2 id='linux_network_namespaces'&gt;Linux Network Namespaces&lt;/h2&gt;
 
 &lt;p&gt;Linux kernel在2.6.29中加入了namespaces，用于支持网络的隔离，我们看一下namespace是如何使用的&lt;/p&gt;
 
-&lt;h3 id=&quot;section&quot;&gt;创建与配置&lt;/h3&gt;
+&lt;h3 id='id1'&gt;创建与配置&lt;/h3&gt;
 
 &lt;p&gt;创建一个名为blue的namespace&lt;/p&gt;
 
@@ -802,7 +728,7 @@ ip netns add blue
 ip netns list
 &lt;/code&gt;&lt;/p&gt;
 
-&lt;h3 id=&quot;namespace&quot;&gt;分配网络接口到namespace上&lt;/h3&gt;
+&lt;h3 id='namespace'&gt;分配网络接口到namespace上&lt;/h3&gt;
 
 &lt;p&gt;我们可以将一对veth中的一个分配到namespace上，将另一个分配到另一个上。&lt;/p&gt;
 
@@ -812,19 +738,13 @@ ip netns list
 ip link add veth0 type veth peer name veth1
 &lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;这样就创建了一对veth，veth0 和veth1。
-veth的作用就像一根网线一样，从一端进入的数据会从另一端出来。
-使用
-&lt;code&gt;
+&lt;p&gt;这样就创建了一对veth，veth0 和veth1。 veth的作用就像一根网线一样，从一端进入的数据会从另一端出来。 使用 &lt;code&gt;
 ip link list
-&lt;/code&gt;
-查看创建的veth设备。&lt;/p&gt;
+&lt;/code&gt; 查看创建的veth设备。&lt;/p&gt;
 
-&lt;p&gt;如果我们想把刚创建的namaespace与global/default namespace连接，我们可以这样做：
-&lt;code&gt;
+&lt;p&gt;如果我们想把刚创建的namaespace与global/default namespace连接，我们可以这样做： &lt;code&gt;
 ip link set veth1 netns blue
-&lt;/code&gt;
-veth1 从global从消失了,因为这对veth的另一端veth0在default中，这样我们就可以将两个 namespace联系起来了。&lt;/p&gt;
+&lt;/code&gt; veth1 从global从消失了,因为这对veth的另一端veth0在default中，这样我们就可以将两个 namespace联系起来了。&lt;/p&gt;
 
 &lt;p&gt;使用如下命令查看blue namespace中的连接&lt;/p&gt;
 
@@ -838,92 +758,90 @@ ip netns exec blue ip link list
 ip netns exec &amp;lt;network namespace&amp;gt; &amp;lt;command to run against that namespace&amp;gt;
 &lt;/code&gt;&lt;/p&gt;
 
-&lt;h3 id=&quot;section-1&quot;&gt;连接到物理网络&lt;/h3&gt;
+&lt;h3 id='id2'&gt;连接到物理网络&lt;/h3&gt;
 
-&lt;p&gt;可以使用linux bridge 或者 openvswith bridge。将物理接口和veth的一个加入到同一个bridge就可以了。&lt;/p&gt;
-
-</description>
+&lt;p&gt;可以使用linux bridge 或者 openvswith bridge。将物理接口和veth的一个加入到同一个bridge就可以了。&lt;/p&gt;</description>
                 <link>http://taget.github.io/lessons/2014/06/09/linux-network-namespace</link>
                 <guid>http://taget.github.io/lessons/2014/06/09/linux-network-namespace</guid>
-                <pubDate>2014-06-09T00:00:00+00:00</pubDate>
+                <pubDate>2014-06-09T00:00:00+08:00</pubDate>
         </item>
 
         <item>
                 <title>Linux PCI</title>
-                <description>
-&lt;h1 id=&quot;pci-&quot;&gt;PCI 简介&lt;/h1&gt;
+                <description>&lt;h1 id='pci_'&gt;PCI 简介&lt;/h1&gt;
+
 &lt;p&gt;PCI(Periheral Component Interconnect)有三种地址空间：PCI I/O空间、PCI内存地址空间和PCI配置空间。&lt;/p&gt;
 
-&lt;p&gt;I/O 空间和内存地址空间由PCI驱动使用。
-PCI配置空间由Linux PCI初始化代码使用，由内核用来进行配置，比如中断号和I/O内存基址空间。&lt;/p&gt;
+&lt;p&gt;I/O 空间和内存地址空间由PCI驱动使用。 PCI配置空间由Linux PCI初始化代码使用，由内核用来进行配置，比如中断号和I/O内存基址空间。&lt;/p&gt;
 
-&lt;h2 id=&quot;pci--1&quot;&gt;PCI 桥&lt;/h2&gt;
-&lt;p&gt;一共有三种PCI桥：
-* HOST/PCI桥（HOST bridge）：用于连接CPU和PCI的桥设备
-* PCI/ISA桥 （ISA bridge）：用于连接PCI总线和ISA总线的桥
-* PCI-PCI桥（PCI-PCI bridge）：用于PCI总线的扩展
-下图展示了pci桥的层次连接：&lt;/p&gt;
+&lt;h2 id='pci_'&gt;PCI 桥&lt;/h2&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/images/pci-connection.jpg&quot; alt=&quot;pci bridge connection&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;在使用PCI设备之前,Linux Knerle需要对其进行枚举和配置。
-枚举的结果就将是一个树状的结构，根是HOST/PCI桥。&lt;/p&gt;
-
-&lt;h2 id=&quot;pci&quot;&gt;配置PCI设备&lt;/h2&gt;
-&lt;p&gt;Linux kernel 对PCI配置空间进行配置。这个PCI配置空间其实就是一些寄存器，称为配置寄存器组。
-当PCI设备尚未被激活的时候，它只对配置事务响应。设备上是不会有I/O端口映射到计算机的内存空间的。
-中断也会被禁止。&lt;/p&gt;
-
-&lt;h2 id=&quot;pci-1&quot;&gt;PCI设备的地址空间&lt;/h2&gt;
-&lt;p&gt;所有PCI设备的配置空间寄存器组都采用相同的地址，由总线的PCI桥在访问时附加上其他条件进行区分。
-对于CPU来说，它通过一个统一的入口地址HOST/PCI桥，即树型结构的根发出指令，再由相应的PCI桥间接地完成具体的读写。
-这个PCI桥（或者称PCI总线）包含两个寄存器，’地址寄存器’和’数据寄存器’，CPU向’地址寄存器’写入要访问的地址，然后通过’数据寄存器’读取数据。
-地址寄存器的地址组成：
-总线号：设备号：功能号：寄存器号
-示例，lspci 输出：&lt;/p&gt;
+&lt;p&gt;一共有三种PCI桥：&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;0000 : PCI domain (each domain can contain up to 256 PCI buses)&lt;/li&gt;
-  &lt;li&gt;04   : the bus number the device is attached to&lt;/li&gt;
-  &lt;li&gt;00   : the device number&lt;/li&gt;
-  &lt;li&gt;.0   : PCI device function&lt;/li&gt;
+&lt;li&gt;HOST/PCI桥（HOST bridge）：用于连接CPU和PCI的桥设备&lt;/li&gt;
+
+&lt;li&gt;PCI/ISA桥 （ISA bridge）：用于连接PCI总线和ISA总线的桥&lt;/li&gt;
+
+&lt;li&gt;PCI-PCI桥（PCI-PCI bridge）：用于PCI总线的扩展 下图展示了pci桥的层次连接：&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&quot;pci-2&quot;&gt;访问PCI设备的几种方式&lt;/h2&gt;
+&lt;p&gt;&lt;img alt='pci bridge connection' src='/assets/images/pci-connection.jpg' /&gt;&lt;/p&gt;
+
+&lt;p&gt;在使用PCI设备之前,Linux Knerle需要对其进行枚举和配置。 枚举的结果就将是一个树状的结构，根是HOST/PCI桥。&lt;/p&gt;
+
+&lt;h2 id='pci'&gt;配置PCI设备&lt;/h2&gt;
+
+&lt;p&gt;Linux kernel 对PCI配置空间进行配置。这个PCI配置空间其实就是一些寄存器，称为配置寄存器组。 当PCI设备尚未被激活的时候，它只对配置事务响应。设备上是不会有I/O端口映射到计算机的内存空间的。 中断也会被禁止。&lt;/p&gt;
+
+&lt;h2 id='pci'&gt;PCI设备的地址空间&lt;/h2&gt;
+
+&lt;p&gt;所有PCI设备的配置空间寄存器组都采用相同的地址，由总线的PCI桥在访问时附加上其他条件进行区分。 对于CPU来说，它通过一个统一的入口地址HOST/PCI桥，即树型结构的根发出指令，再由相应的PCI桥间接地完成具体的读写。 这个PCI桥（或者称PCI总线）包含两个寄存器，&amp;#8217;地址寄存器&amp;#8217;和&amp;#8217;数据寄存器&amp;#8217;，CPU向&amp;#8217;地址寄存器&amp;#8217;写入要访问的地址，然后通过&amp;#8217;数据寄存器&amp;#8217;读取数据。 地址寄存器的地址组成： 总线号：设备号：功能号：寄存器号 示例，lspci 输出：&lt;/p&gt;
+
 &lt;ul&gt;
-  &lt;li&gt;通过访问I/O端口, I/O 地址空间一般不关联到系统内存，因为端口也可以映射到内存中，会引起混淆;&lt;/li&gt;
-  &lt;li&gt;I/O 内存映射，就是我们通常说的MMIO,即将特定外设的端口地址映射到普通内存中。cpu可以像普通内存一样操作设备。内核通过ioremap和iounmap命令用于映射I/O内存&lt;/li&gt;
-  &lt;li&gt;轮询和中断，显然中断是更好的方式。&lt;/li&gt;
+&lt;li&gt;0000 : PCI domain (each domain can contain up to 256 PCI buses)&lt;/li&gt;
+
+&lt;li&gt;04 : the bus number the device is attached to&lt;/li&gt;
+
+&lt;li&gt;00 : the device number&lt;/li&gt;
+
+&lt;li&gt;.0 : PCI device function&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&quot;pcibarbase-address-register&quot;&gt;PCI的BAR（base address register）&lt;/h2&gt;
-&lt;p&gt;BAR是PCI配置空间中从0x10 到 0x24的6个register，用来定义PCI需要的配置空间大小以及配置PCI设备占用的地址空间。
-X86的地址空间分为，IO 和 MEM 两类，PCI的BAR的某一位决定了设备需要映射到MEM空间还是IO空间。
-POWERPC只有MEM空间（IO空间不单独编址）。&lt;/p&gt;
+&lt;h2 id='pci'&gt;访问PCI设备的几种方式&lt;/h2&gt;
 
-</description>
+&lt;ul&gt;
+&lt;li&gt;通过访问I/O端口, I/O 地址空间一般不关联到系统内存，因为端口也可以映射到内存中，会引起混淆;&lt;/li&gt;
+
+&lt;li&gt;I/O 内存映射，就是我们通常说的MMIO,即将特定外设的端口地址映射到普通内存中。cpu可以像普通内存一样操作设备。内核通过ioremap和iounmap命令用于映射I/O内存 * 轮询和中断，显然中断是更好的方式。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id='pcibarbase_address_register'&gt;PCI的BAR（base address register）&lt;/h2&gt;
+
+&lt;p&gt;BAR是PCI配置空间中从0x10 到 0x24的6个register，用来定义PCI需要的配置空间大小以及配置PCI设备占用的地址空间。 X86的地址空间分为，IO 和 MEM 两类，PCI的BAR的某一位决定了设备需要映射到MEM空间还是IO空间。 POWERPC只有MEM空间（IO空间不单独编址）。&lt;/p&gt;</description>
                 <link>http://taget.github.io/2014/06/06/linux-pci</link>
                 <guid>http://taget.github.io/2014/06/06/linux-pci</guid>
-                <pubDate>2014-06-06T00:00:00+00:00</pubDate>
+                <pubDate>2014-06-06T00:00:00+08:00</pubDate>
         </item>
 
         <item>
                 <title>Fedora Live Upgrade</title>
-                <description>&lt;h1 id=&quot;fedora-&quot;&gt;Fedora 在线升级&lt;/h1&gt;
-&lt;p&gt;## 所需工具工具 fedup
-### fedup的安装
-&lt;code&gt;
+                <description>&lt;h1 id='fedora_'&gt;Fedora 在线升级&lt;/h1&gt;
+
+&lt;h2 id='_fedup'&gt;所需工具工具 fedup&lt;/h2&gt;
+
+&lt;h3 id='fedup'&gt;fedup的安装&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;
 $sudo yum install fedup
-&lt;/code&gt;
-fedup装成功后，推荐使用网络方式升级系统&lt;/p&gt;
+&lt;/code&gt; fedup装成功后，推荐使用网络方式升级系统&lt;/p&gt;
 
 &lt;p&gt;&lt;code&gt;
 $sudo fedup-cli --network 20 --addrepo f20=http://mirrors.163.com/fedora/releases/20/Everything/x86_64/os/
-&lt;/code&gt;&lt;/p&gt;
-</description>
+&lt;/code&gt;&lt;/p&gt;</description>
                 <link>http://taget.github.io/lessons/2014/06/06/fedora-live-upgrade</link>
                 <guid>http://taget.github.io/lessons/2014/06/06/fedora-live-upgrade</guid>
-                <pubDate>2014-06-06T00:00:00+00:00</pubDate>
+                <pubDate>2014-06-06T00:00:00+08:00</pubDate>
         </item>
 
 
