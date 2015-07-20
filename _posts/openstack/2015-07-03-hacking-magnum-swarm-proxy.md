@@ -66,11 +66,15 @@ And you need to have an OpenStack setup, command line to create baymodelas follo
 
     nova keypair-add --pub-key ~/.ssh/id_rsa.pub testkey
     NIC_ID=$(neutron net-show public | awk '/ id /{print $4}')
-    
+
+    # create a baymodel
     magnum baymodel-create --name swarmmodel --image-id fedora-21-atomic-3 \
         --keypair-id testkey --external-network-id $NIC_ID \
         --dns-nameserver 10.248.2.5 --flavor -id m1.small \
         --docker-volume-size 5 --coe swarm --fixed-network 192.168.0.0/24
+
+    # create swarm bay which has 2 agent nodes and 1 manager node
+    magnum bay-create --name swarmbay --baymodel swarmmodel --node-count 2
 
     magnum container-create --name hello --image cirros --bay swarmbay --command "echo hello world"
     magnum container-list
