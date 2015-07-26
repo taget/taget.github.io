@@ -5,10 +5,30 @@
         <description>Eli Qiao's Blog - Eli Qiao</description>
         <link>http://taget.github.io</link>
         <link>http://taget.github.io</link>
-        <lastBuildDate>2015-07-03T16:19:18+08:00</lastBuildDate>
-        <pubDate>2015-07-03T16:19:18+08:00</pubDate>
+        <lastBuildDate>2015-07-26T22:03:24+08:00</lastBuildDate>
+        <pubDate>2015-07-26T22:03:24+08:00</pubDate>
         <ttl>1800</ttl>
 
+
+        <item>
+                <title>Vote Url</title>
+                <description>&lt;h2 id='vote_url'&gt;Vote url&lt;/h2&gt;
+
+&lt;h3 id='id7'&gt;针对热迁移的优化&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/4971'&gt;Towards Robust Live Migration in Dynamic Environments&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id='itopenstack'&gt;英特尔内部IT的OpenStack最佳实践&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/4930'&gt;OpenStack Practice @ Intel IT: Let’s accelerate the design process of smart devices&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id='openstack'&gt;基于OpenStack平台上快速构建用户开发环境的测试集成环境的实例&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/6679'&gt;CI/CDaaS based on Magnum/Murano within Intel IT Private Cloud&lt;/a&gt;&lt;/p&gt;</description>
+                <link>http://taget.github.io/lessons/2015/07/26/vote-url</link>
+                <guid>http://taget.github.io/lessons/2015/07/26/vote-url</guid>
+                <pubDate>2015-07-26T00:00:00+08:00</pubDate>
+        </item>
 
         <item>
                 <title>Hacking Magnum Swarm Proxy</title>
@@ -64,7 +84,7 @@ EOF&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;I put all of them into a patch, you may get it from here, but please not it is only working for my enviroment, just an example for you.&lt;/p&gt;
 
-&lt;p&gt;&lt;a href='https://github.com/taget/mybin/blob/master/misc/0001-Add-proxy-swarm.patch'&gt;like this&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href='https://github.com/taget/mybin/blob/master/misc/0001-Add-proxy-swarm.patch'&gt;patch&lt;/a&gt;&lt;/p&gt;
 
 &lt;h3 id='go_and_play_with_it'&gt;go and play with it&lt;/h3&gt;
 
@@ -73,10 +93,14 @@ EOF&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;nova keypair-add --pub-key ~/.ssh/id_rsa.pub testkey
 NIC_ID=$(neutron net-show public | awk &amp;#39;/ id /{print $4}&amp;#39;)
 
+# create a baymodel
 magnum baymodel-create --name swarmmodel --image-id fedora-21-atomic-3 \
     --keypair-id testkey --external-network-id $NIC_ID \
     --dns-nameserver 10.248.2.5 --flavor -id m1.small \
     --docker-volume-size 5 --coe swarm --fixed-network 192.168.0.0/24
+
+# create swarm bay which has 2 agent nodes and 1 manager node
+magnum bay-create --name swarmbay --baymodel swarmmodel --node-count 2
 
 magnum container-create --name hello --image cirros --bay swarmbay --command &amp;quot;echo hello world&amp;quot;
 magnum container-list
