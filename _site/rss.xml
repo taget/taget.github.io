@@ -5,8 +5,8 @@
         <description>Eli Qiao's Blog - Eli Qiao</description>
         <link>http://taget.github.io</link>
         <link>http://taget.github.io</link>
-        <lastBuildDate>2015-07-26T22:03:24+08:00</lastBuildDate>
-        <pubDate>2015-07-26T22:03:24+08:00</pubDate>
+        <lastBuildDate>2015-07-28T16:37:27+08:00</lastBuildDate>
+        <pubDate>2015-07-28T16:37:27+08:00</pubDate>
         <ttl>1800</ttl>
 
 
@@ -14,17 +14,33 @@
                 <title>Vote Url</title>
                 <description>&lt;h2 id='vote_url'&gt;Vote url&lt;/h2&gt;
 
-&lt;h3 id='id7'&gt;针对热迁移的优化&lt;/h3&gt;
-
 &lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/4971'&gt;Towards Robust Live Migration in Dynamic Environments&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3 id='itopenstack'&gt;英特尔内部IT的OpenStack最佳实践&lt;/h3&gt;
 
 &lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/4930'&gt;OpenStack Practice @ Intel IT: Let’s accelerate the design process of smart devices&lt;/a&gt;&lt;/p&gt;
 
-&lt;h3 id='openstack'&gt;基于OpenStack平台上快速构建用户开发环境的测试集成环境的实例&lt;/h3&gt;
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/6679'&gt;CI/CDaaS based on Magnum/Murano within Intel IT Private Cloud&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/6679'&gt;CI/CDaaS based on Magnum/Murano within Intel IT Private Cloud&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/4610'&gt;OpenStack DevOps in Intel IT: How to serve a private Cloud while continues contribute to community&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/4330'&gt;Media Cloud: Evolve Online Video Business with Full Graphics Virtualization&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/5749'&gt;Murano-based DevOps Best Practice for SaaS Applications&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6646'&gt;Targeting Apps for OpenStack Clouds&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6553'&gt;Sleep Easy with Automated Cinder Volume Backup&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6637'&gt;Mutual backup across data centers based oncinder and Ceph&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/5595'&gt;Distributed Health Checking for Compute Node High Availability&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/5835'&gt;Bridging virtual networks from different OpenStack based clouds&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/5474'&gt;Event based alarming in Ceilometer&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/4984'&gt;High Performance Cost-Effective Virtual Desktops with OpenStack&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6427'&gt;Implement of live resize for kvm vms&lt;/a&gt;&lt;/p&gt;</description>
                 <link>http://taget.github.io/lessons/2015/07/26/vote-url</link>
                 <guid>http://taget.github.io/lessons/2015/07/26/vote-url</guid>
                 <pubDate>2015-07-26T00:00:00+08:00</pubDate>
