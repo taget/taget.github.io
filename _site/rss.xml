@@ -5,14 +5,16 @@
         <description>Eli Qiao's Blog - Eli Qiao</description>
         <link>http://taget.github.io</link>
         <link>http://taget.github.io</link>
-        <lastBuildDate>2015-07-28T16:37:27+08:00</lastBuildDate>
-        <pubDate>2015-07-28T16:37:27+08:00</pubDate>
+        <lastBuildDate>2015-07-29T08:42:21+08:00</lastBuildDate>
+        <pubDate>2015-07-29T08:42:21+08:00</pubDate>
         <ttl>1800</ttl>
 
 
         <item>
                 <title>Vote Url</title>
-                <description>&lt;h2 id='vote_url'&gt;Vote url&lt;/h2&gt;
+                <description>&lt;h2 id='tokyo_summit_vote_url'&gt;Tokyo summit vote url&lt;/h2&gt;
+
+&lt;p&gt;您可以直接点击以下链接进行投票。&lt;/p&gt;
 
 &lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/Presentation/4971'&gt;Towards Robust Live Migration in Dynamic Environments&lt;/a&gt;&lt;/p&gt;
 
@@ -24,11 +26,11 @@
 
 &lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/4330'&gt;Media Cloud: Evolve Online Video Business with Full Graphics Virtualization&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/5749'&gt;Murano-based DevOps Best Practice for SaaS Applications&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/5749'&gt;Telemetry for NFV in OpenStack&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6646'&gt;Targeting Apps for OpenStack Clouds&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6646'&gt;Murano-based DevOps Best Practice for SaaS Applications&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6553'&gt;Sleep Easy with Automated Cinder Volume Backup&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6653'&gt;Sleep Easy with Automated Cinder Volume Backup&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6637'&gt;Mutual backup across data centers based oncinder and Ceph&lt;/a&gt;&lt;/p&gt;
 
@@ -40,7 +42,9 @@
 
 &lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/4984'&gt;High Performance Cost-Effective Virtual Desktops with OpenStack&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6427'&gt;Implement of live resize for kvm vms&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6427'&gt;Implement of live resize for kvm vms&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href='https://www.openstack.org/summit/tokyo-2015/vote-for-speakers/presentation/6642'&gt;Testing rolling upgrade using Grenade with Kolla&lt;/a&gt;&lt;/p&gt;</description>
                 <link>http://taget.github.io/lessons/2015/07/26/vote-url</link>
                 <guid>http://taget.github.io/lessons/2015/07/26/vote-url</guid>
                 <pubDate>2015-07-26T00:00:00+08:00</pubDate>
