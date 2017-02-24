@@ -3,7 +3,7 @@ layout: post
 category : lessons
 tags : [openstack, cloud]
 ---
-# 如何在本地使用cloud镜像 
+# 如何在本地使用cloud镜像
 
 fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可以直接下载并将其运行为一个虚拟机实例。
 但是这些cloud镜像文件默认磁盘分区大小可能无法满足我们的需求，而且，默认是不提供通过密码访问的方式访问虚拟机。
@@ -24,22 +24,22 @@ fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可
 
 ### 查看镜像文件大小，并对其进行扩展
 
-    $ virt-filesystems --long --parts --blkdevs -h -a Fedora-x86_64-20-20131211.1-sda.qcow2 
-    Name       Type       MBR  Size  Parent 
-    /dev/sda1  partition  83   1.9G  /dev/sda 
+    $ virt-filesystems --long --parts --blkdevs -h -a Fedora-x86_64-20-20131211.1-sda.qcow2
+    Name       Type       MBR  Size  Parent
+    /dev/sda1  partition  83   1.9G  /dev/sda
     /dev/sda   device     -    2.0G  -
     $ virt-df -h  Fedora-x86_64-20-20131211.1-sda.qcow2
     Filesystem                                Size       Used  Available  Use%
     Fedora-x86_64-20-20131211.1-sda.qcow2:/dev/sda1
                                           1.8G       572M       1.3G   31%
 
-libguestfs不支持in-place修改，所以使用qemu-img命令创建一个30G的磁盘，然后扩展原始镜像，最终会创建一个新的镜像文件
+libguestfs不支持in-place修改，所以使用qemu-img命令创建一个30G的磁盘，然后扩展原始镜像，最终会创建一个新的镜像文件。
 
 
 
     $ qemu-img create -f qcow2 new-disk 30G
     Formatting 'new-disk', fmt=qcow2 size=32212254720 encryption=off cluster_size=65536 lazy_refcounts=off
-    
+
     $ virt-resize Fedora-x86_64-20-20131211.1-sda.qcow2 new-disk --expand /dev/sda1
     Examining Fedora-x86_64-20-20131211.1-sda.qcow2 ...
     100% ⟦▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒⟧ --:--
@@ -47,8 +47,8 @@ libguestfs不支持in-place修改，所以使用qemu-img命令创建一个30G的
 
     Summary of changes:
 
-    /dev/sda1: This partition will be resized from 1.9G to 30.0G.  The 
-    filesystem ext4 on /dev/sda1 will be expanded using the 'resize2fs' 
+    /dev/sda1: This partition will be resized from 1.9G to 30.0G.  The
+    filesystem ext4 on /dev/sda1 will be expanded using the 'resize2fs'
     method.
 
     **********
@@ -57,7 +57,7 @@ libguestfs不支持in-place修改，所以使用qemu-img命令创建一个30G的
      100% ⟦▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒⟧ 00:00
     Expanding /dev/sda1 using the 'resize2fs' method ...
 
-    Resize operation completed with no errors.  Before deleting the old 
+    Resize operation completed with no errors.  Before deleting the old
     disk, carefully check that the resized disk boots and works correctly
 
 如果过程中无错误，原始镜像被扩展到new-disk镜像文件中，再次查看磁盘分区大小,sda1分区变为30G
@@ -91,7 +91,7 @@ libguestfs还提供了guestmount工具，用于把image镜像mount到某个目�
     $ ls /mnt/guest/
     bin  boot  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
     $ touch /mnt/guest/etc/1
-    $ echo << EOF >>/mnt/guest/root/.ssh/authorized_keys 
+    $ echo << EOF >>/mnt/guest/root/.ssh/authorized_keys
     {your public key }
     EOF
     $ guestunmount /mnt/guest/
@@ -104,18 +104,20 @@ cloud-init 是ubuntu社区的一个项目，当虚拟机系统启动时自动运
 所以，我们可以准备一个小的用于cloud-init访问的iso文件，在里面配置我们用到的密码或者sshkey。
 具体代码：
 
-    $ cat meta-data
+    $ cat > meta-data << END
     instance-id: iid-local01;
     local-hostname: myhost;
+    END
 
-    $ cat user-data
+    $ cat > user-data << END
     #cloud-config
     password: mypassword
     ssh_pwauth: True
     chpasswd: { expire: False }
-    
+
     ssh_authorized_keys:
       - ssh-rsa ... foo@foo.com (insert ~/.ssh/id_rsa.pub here)
+    END
 
 请注意格式。
 
@@ -133,5 +135,3 @@ cloud-init 是ubuntu社区的一个项目，当虚拟机系统启动时自动运
 http://kimizhang.wordpress.com/2014/03/18/how-to-inject-filemetassh-keyroot-passworduserdataconfig-drive-to-a-vm-during-nova-boot/
 https://www.technovelty.org/linux/running-cloud-images-locally.html
 http://cloudinit.readthedocs.org/en/latest/
-
-
