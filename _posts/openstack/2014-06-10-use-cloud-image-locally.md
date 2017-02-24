@@ -17,18 +17,20 @@ fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可
 ### 首先获取image，使用国内163网站的镜像服务器下载fedora20的镜像文件:
 
 ```
-    wget http://mirrors.163.com/fedora/releases/20/Images/x86_64/Fedora-x86_64-20-20131211.1-sda.qcow2
+    wget https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2.xz
+
+    xz -v --decompress CentOS-7-x86_64-GenericCloud.qcow2.xz
 ```
 
 因为libguestfs工具以来libvirt启动虚拟机来进行编辑镜像文件，所以我们要把镜像文件放在/var/lib/libvirt/images目录下。
 
 ### 查看镜像文件大小，并对其进行扩展
 
-    $ virt-filesystems --long --parts --blkdevs -h -a Fedora-x86_64-20-20131211.1-sda.qcow2
+    $ virt-filesystems --long --parts --blkdevs -h -a CentOS-7-x86_64-GenericCloud.qcow2
     Name       Type       MBR  Size  Parent
     /dev/sda1  partition  83   1.9G  /dev/sda
     /dev/sda   device     -    2.0G  -
-    $ virt-df -h  Fedora-x86_64-20-20131211.1-sda.qcow2
+    $ virt-df -h  CentOS-7-x86_64-GenericCloud.qcow2
     Filesystem                                Size       Used  Available  Use%
     Fedora-x86_64-20-20131211.1-sda.qcow2:/dev/sda1
                                           1.8G       572M       1.3G   31%
@@ -36,12 +38,11 @@ fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可
 libguestfs不支持in-place修改，所以使用qemu-img命令创建一个30G的磁盘，然后扩展原始镜像，最终会创建一个新的镜像文件。
 
 
-
     $ qemu-img create -f qcow2 new-disk 30G
     Formatting 'new-disk', fmt=qcow2 size=32212254720 encryption=off cluster_size=65536 lazy_refcounts=off
 
-    $ virt-resize Fedora-x86_64-20-20131211.1-sda.qcow2 new-disk --expand /dev/sda1
-    Examining Fedora-x86_64-20-20131211.1-sda.qcow2 ...
+    $ virt-resize CentOS-7-x86_64-GenericCloud.qcow2 new-disk --expand /dev/sda1
+    Examining CentOS-7-x86_64-GenericCloud.qcow2 ...
     100% ⟦▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒⟧ --:--
     **********
 
@@ -116,20 +117,49 @@ cloud-init 是ubuntu社区的一个项目，当虚拟机系统启动时自动运
     chpasswd: { expire: False }
 
     ssh_authorized_keys:
-      - ssh-rsa ... foo@foo.com (insert ~/.ssh/id_rsa.pub here)
+      - ssh-rsa {(insert ~/.ssh/id_rsa.pub here)}
     END
 
 请注意格式。
 
 生成iso文件，并挂载到虚拟机上。
 
+
 ```
     genisoimage -output init.iso -volid cidata -joliet -rock user-data meta-data
 ```
 
-启动虚拟机后，cloud-init回自动运行并配置主机。
+把iso添加成cdrom设备：
+
+```
+    <disk type='file' device='cdrom'>
+        <driver name='qemu' type='raw'/>
+        <source file='/home/taget/init.iso'/>
+        <target dev='hdc' bus='ide'/>
+        <readonly/>
+        <address type='drive' controller='0' bus='1' target='0' unit='0'/>
+    </disk>
+```
+
+启动虚拟机后，cloud-init会自动运行并配置主机。
 
 关于cloud-init的其他配置使用情况可以参考[ Cloud init Document ](http://cloudinit.readthedocs.org/en/latest/).
+
+
+### 关于网络
+
+如果使用ubuntu的cloud image，系统在启动过程中会扫描网络设备的名字，所以，网络设备可以正确启动。
+如果是CentOS的image，在配置虚拟机interface的时候要指定为virtio驱动，保证系统发现的网络设备名称为eth0。
+
+
+```
+    <interface type='network'>
+        <mac address='52:54:00:e2:fa:19'/>
+        <source network='default'/>
+        <model type='virtio'/>
+        <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+    </interface>
+```
 
 参考链接：
 http://kimizhang.wordpress.com/2014/03/18/how-to-inject-filemetassh-keyroot-passworduserdataconfig-drive-to-a-vm-during-nova-boot/
