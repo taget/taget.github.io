@@ -1,13 +1,14 @@
 
-http://taget.github.io/archive.html
+http://taget.github.io/archive
 http://taget.github.io/atom.xml
-http://taget.github.io/sitemap.txt
-http://taget.github.io/pages.html
-http://taget.github.io/tags.html
-http://taget.github.io/index.html
-http://taget.github.io/categories.html
+http://taget.github.io/categories
+http://taget.github.io/
+http://taget.github.io/pages
 http://taget.github.io/rss.xml
+http://taget.github.io/sitemap.txt
+http://taget.github.io/tags
 
+http://taget.github.io/2017/11/27/tcp
 http://taget.github.io/lessons/2015/07/26/vote-url
 http://taget.github.io/lessons/2015/07/03/hacking-magnum-swarm-proxy
 http://taget.github.io/2014/09/23/vhost
