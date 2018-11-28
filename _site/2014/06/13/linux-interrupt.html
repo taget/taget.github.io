@@ -1,0 +1,276 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Linux Interrupt</title>
+    <meta name="description" content="">
+    <meta name="author" content="Eli Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap styles -->
+    <link href="/assets/themes//bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Optional theme -->
+    <link href="/assets/themes//bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Sticky Footer -->
+    <link href="/assets/themes//bootstrap/css/bs-sticky-footer.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="/assets/themes//css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jb-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Eli Qiao's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="jb-navbar-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/archive">Archive</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/pages">Pages</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags">Tags</a></li>
+      	
+      
+    
+  
+
+
+
+
+          </ul>
+          <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>
+        </div><!-- /.navbar-collapse -->
+      </nav>
+      <div class="text clearfix" style="text-align:center;">
+      </div>
+      <div class="container" id="left" style="border: left;">
+        
+<div class="page-header">
+  <h1>Linux Interrupt </h1>
+</div>
+
+<div class="row post-full">
+  <div class="col-xs-12">
+    <div class="date">
+      <span>13 June 2014</span>
+    </div>
+    <div class="content">
+      
+<h2 id="linux-中断">Linux 中断</h2>
+<p>中断硬件发起，外部设备与cpu通信的一种方式，相对于cpu轮询，中断是更好的方式。
+中断设备与cpu的物理连接方式如下：</p>
+
+<p><img src="/assets/images/pic-cpu-connection.jpeg" alt="pci bridge connection" /></p>
+
+<p>一般来说，外设并不直接与cpu相连接，而是通过一个叫’中断控制器’硬件连接。这个中断控制器是可被编程配置的。
+所以又称它为’可编程中断控制器’（PIC）。外设向中断控制器发起中断，然后，’中断控制器’告诉cpu有中断到来。
+cpu去读取中断控制器（PIC）产生的软中断号。
+初始化需要配置PIC，配置内容包括：</p>
+
+<ol>
+  <li>中断触发的电信号类型（水平还是边沿触发）</li>
+  <li>将外设的引脚编号映射到cpu可见的软件中断号irq</li>
+  <li>屏蔽掉某些外部设备的中断触发</li>
+</ol>
+
+<h2 id="中断向量表">中断向量表</h2>
+
+<p>中断向量表是cpu的内部概念。当发生 ‘异常’ 或者 ‘内部中断’时，cpu会查看中断向量表该异常或者中断对应的处理函数地址。</p>
+
+<h2 id="通用中断处理函数">通用中断处理函数</h2>
+
+<p>通常，当发生外部设备中断时，外设向中断控制器产生一个中断，中断控制器生成一个软件中断信号通知cpu。cpu发现是一个外部
+中断，他会查询中断向量表中的某一表项去处理该中断。该表项对应的就是通用中断处理函数的入口地址。操作系统会提供这个通
+用中断处理函数的定义。</p>
+
+<p>通用中断处理函数的处理过程大致为：</p>
+
+<ol>
+  <li>获取软件中断号irq，一般使用汇编编写。</li>
+  <li>调用do_irq，c函数编写</li>
+</ol>
+
+<p>所以，当一个外部设备产生中断后，到cpu响应该中断的流程如下：</p>
+<ol>
+  <li>外设触发一个中断</li>
+  <li>中断控制器（PIC）获取中断号并报告给cpu</li>
+  <li>cpu得知这是一个外部中断，它去查找他的中断向量表，找到通用中断处理函数的地址</li>
+  <li>cpu调用中断处理函数，通过向PIC查询软中断号</li>
+  <li>中断处理函数通过软中断号找到该外设注册的中断处理子函数（由驱动提供,在irq_desc数组中）</li>
+</ol>
+
+<h2 id="hardirq-和-softirq">HARDIRQ 和 SOFTIRQ</h2>
+
+<p>当cpu在响应一个中断的时候，如果有新的中断到来了，如何处理呢？
+cpu为了处理这种情况，将中断处理分成了上半部和下半部。
+HARDIRQ在中断关闭情况下执行，他的执行时间尽可能短
+SOFTIRQ在中断开启的情况下执行。此时外部设备仍可以继续中断处理器，一般驱动程序可以将耗时部分放在此部分执行。</p>
+
+
+    </div>
+
+    
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-tags"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/tags.html#linux-ref">linux <span>5</span></a></li>
+    
+  
+
+
+
+    </ul>
+    
+  
+    <hr>
+    <ul class="pagination">
+    
+      <li class="prev"><a href="/lessons/2014/06/10/use-cloud-image-locally" title="Use Cloud Image Locally">&laquo; Previous</a></li>
+    
+      <li><a href="/archive.html">Archive</a></li>
+    
+      <li class="next"><a href="/lessons/2014/08/14/deploy-openstack-with-packstack" title="Deploy Openstack With Packstack">Next &raquo;</a></li>
+    
+    </ul>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'jekyllbootstrap'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+    </div>
+    <div id="footer">
+      <div class="container">
+        <p>&copy; 2018 Eli Qiao 
+           &copy; email: taget@163.com
+           &copy;  Hakder友情链接： <a href=" http://chris.yeoh.info" target="_blank">Chris Yeoh</a> & 
+           <a href="http://soulxu.github.io/" target="_blank">Alex Xu</a>
+        </p>
+      </div>
+    </div id="footer">
+
+    
+
+
+    <!-- Latest compiled and minified JavaScript, requires jQuery 1.x (2.x not supported in IE8) -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/assets/themes//bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>
+

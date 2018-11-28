@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Use Cloud Image Locally</title>
+    
+    <meta name="author" content="Eli Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap styles -->
+    <link href="/assets/themes//bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Optional theme -->
+    <link href="/assets/themes//bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Sticky Footer -->
+    <link href="/assets/themes//bootstrap/css/bs-sticky-footer.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="/assets/themes//css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jb-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Eli Qiao's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="jb-navbar-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/archive">Archive</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/pages">Pages</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags">Tags</a></li>
+      	
+      
+    
+  
+
+
+
+
+          </ul>
+          <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>
+        </div><!-- /.navbar-collapse -->
+      </nav>
+      <div class="text clearfix" style="text-align:center;">
+      </div>
+      <div class="container" id="left" style="border: left;">
+        
+<div class="page-header">
+  <h1>Use Cloud Image Locally </h1>
+</div>
+
+<div class="row post-full">
+  <div class="col-xs-12">
+    <div class="date">
+      <span>10 June 2014</span>
+    </div>
+    <div class="content">
+      <h1 id="如何在本地使用cloud镜像">如何在本地使用cloud镜像</h1>
+
+<p>fedora，ubuntu等发行版厂商提供了各自cloud的镜像文件，我们可以直接下载并将其运行为一个虚拟机实例。
+但是这些cloud镜像文件默认磁盘分区大小可能无法满足我们的需求，而且，默认是不提供通过密码访问的方式访问虚拟机。
+本文将介绍如何快速修该磁盘分区大小以及访问虚拟机。
+本文中使用的环境为fedora 20，并且需要libguestfs-tools提供的工具，使用如下命令安装。</p>
+
+<pre><code>    sudo yum install libguestfs-tools -y
+</code></pre>
+
+<h3 id="首先获取image使用国内163网站的镜像服务器下载fedora20的镜像文件">首先获取image，使用国内163网站的镜像服务器下载fedora20的镜像文件:</h3>
+
+<pre><code>    wget https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2.xz
+
+    xz -v --decompress CentOS-7-x86_64-GenericCloud.qcow2.xz
+</code></pre>
+
+<p>因为libguestfs工具以来libvirt启动虚拟机来进行编辑镜像文件，所以我们要把镜像文件放在/var/lib/libvirt/images目录下。</p>
+
+<h3 id="查看镜像文件大小并对其进行扩展">查看镜像文件大小，并对其进行扩展</h3>
+
+<pre><code>$ virt-filesystems --long --parts --blkdevs -h -a CentOS-7-x86_64-GenericCloud.qcow2
+Name       Type       MBR  Size  Parent
+/dev/sda1  partition  83   1.9G  /dev/sda
+/dev/sda   device     -    2.0G  -
+$ virt-df -h  CentOS-7-x86_64-GenericCloud.qcow2
+Filesystem                                Size       Used  Available  Use%
+Fedora-x86_64-20-20131211.1-sda.qcow2:/dev/sda1
+                                      1.8G       572M       1.3G   31%
+</code></pre>
+
+<p>libguestfs不支持in-place修改，所以使用qemu-img命令创建一个30G的磁盘，然后扩展原始镜像，最终会创建一个新的镜像文件。</p>
+
+<pre><code>$ qemu-img create -f qcow2 new-disk 30G
+Formatting 'new-disk', fmt=qcow2 size=32212254720 encryption=off cluster_size=65536 lazy_refcounts=off
+
+$ virt-resize CentOS-7-x86_64-GenericCloud.qcow2 new-disk --expand /dev/sda1
+Examining CentOS-7-x86_64-GenericCloud.qcow2 ...
+100% ⟦▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒⟧ --:--
+**********
+
+Summary of changes:
+
+/dev/sda1: This partition will be resized from 1.9G to 30.0G.  The
+filesystem ext4 on /dev/sda1 will be expanded using the 'resize2fs'
+method.
+
+**********
+Setting up initial partition table on new-disk ...
+Copying /dev/sda1 ...
+ 100% ⟦▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒⟧ 00:00
+Expanding /dev/sda1 using the 'resize2fs' method ...
+
+Resize operation completed with no errors.  Before deleting the old
+disk, carefully check that the resized disk boots and works correctly
+</code></pre>
+
+<p>如果过程中无错误，原始镜像被扩展到new-disk镜像文件中，再次查看磁盘分区大小,sda1分区变为30G</p>
+
+<pre><code>$ virt-df -h new-disk
+Filesystem                                Size       Used  Available  Use%
+new-disk:/dev/sda1                         30G       573M        29G    2%
+</code></pre>
+
+<h3 id="访问虚拟机">访问虚拟机</h3>
+<p>cloud 镜像文件默认是无法使用密码登陆的，如果想访问虚拟机，如何去做呢？</p>
+
+<p>有两种方法:</p>
+
+<ul>
+  <li>一种是通过libguestfs 提供的工具修改镜像文件的文件系统</li>
+</ul>
+
+<p>打开文件访问功能并设置密码：</p>
+
+<pre><code>$ virt-customize -a new-disk --root-password password:kvm123456 \
+--edit '/etc/ssh/sshd_config: s/PasswordAuthentication no/PasswordAuthentication yes/'
+[   0.0] Examining the guest ...
+[   5.0] Setting a random seed
+[   5.0] Editing: /etc/ssh/sshd_config
+[   5.0] Setting passwords
+[   5.0] Finishing off
+</code></pre>
+
+<p>或者通过注入ssh publick key
+libguestfs还提供了guestmount工具，用于把image镜像mount到某个目录,加入ssh publich key</p>
+
+<pre><code>$ guestmount -a new-disk -i /mnt/guest/
+$ ls /mnt/guest/
+bin  boot  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+$ touch /mnt/guest/etc/1
+$ echo &lt;&lt; EOF &gt;&gt;/mnt/guest/root/.ssh/authorized_keys
+{your public key }
+EOF
+$ guestunmount /mnt/guest/
+</code></pre>
+
+<ul>
+  <li>第二种方式是通过 cloud-init</li>
+</ul>
+
+<p>cloud-init 是ubuntu社区的一个项目，当虚拟机系统启动时自动运行，与openstack neutron 配合，通过dhcp服务获取虚拟机ip，访问网络节点
+的80端口获得用户配置的资源，用于配置当前环境。
+本文中我们没有创建用于cloud-init的服务器，当cloud-init没有找到服务器之后，它还会继续探测是否加载了cd-rom（/dev/sr0）设备。
+所以，我们可以准备一个小的用于cloud-init访问的iso文件，在里面配置我们用到的密码或者sshkey。
+具体代码：</p>
+
+<pre><code>$ cat &gt; meta-data &lt;&lt; END
+instance-id: iid-local01;
+local-hostname: myhost;
+END
+
+$ cat &gt; user-data &lt;&lt; END
+#cloud-config
+password: mypassword
+ssh_pwauth: True
+chpasswd: { expire: False }
+
+ssh_authorized_keys:
+  - ssh-rsa {(insert ~/.ssh/id_rsa.pub here)}
+END
+</code></pre>
+
+<p>请注意格式。</p>
+
+<p>生成iso文件，并挂载到虚拟机上。</p>
+
+<pre><code>    genisoimage -output init.iso -volid cidata -joliet -rock user-data meta-data
+</code></pre>
+
+<p>把iso添加成cdrom设备：</p>
+
+<pre><code>    &lt;disk type='file' device='cdrom'&gt;
+        &lt;driver name='qemu' type='raw'/&gt;
+        &lt;source file='/home/taget/init.iso'/&gt;
+        &lt;target dev='hdc' bus='ide'/&gt;
+        &lt;readonly/&gt;
+        &lt;address type='drive' controller='0' bus='1' target='0' unit='0'/&gt;
+    &lt;/disk&gt;
+</code></pre>
+
+<p>启动虚拟机后，cloud-init会自动运行并配置主机。</p>
+
+<p>关于cloud-init的其他配置使用情况可以参考<a href="http://cloudinit.readthedocs.org/en/latest/"> Cloud init Document </a>.</p>
+
+<h3 id="关于网络">关于网络</h3>
+
+<p>如果使用ubuntu的cloud image，系统在启动过程中会扫描网络设备的名字，所以，网络设备可以正确启动。
+如果是CentOS的image，在配置虚拟机interface的时候要指定为virtio驱动，保证系统发现的网络设备名称为eth0。</p>
+
+<pre><code>    &lt;interface type='network'&gt;
+        &lt;mac address='52:54:00:e2:fa:19'/&gt;
+        &lt;source network='default'/&gt;
+        &lt;model type='virtio'/&gt;
+        &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/&gt;
+    &lt;/interface&gt;
+</code></pre>
+
+<p>参考链接：
+http://kimizhang.wordpress.com/2014/03/18/how-to-inject-filemetassh-keyroot-passworduserdataconfig-drive-to-a-vm-during-nova-boot/
+https://www.technovelty.org/linux/running-cloud-images-locally.html
+http://cloudinit.readthedocs.org/en/latest/</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/categories.html#lessons-ref">
+    		lessons <span>7</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-tags"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/tags.html#openstack-ref">openstack <span>5</span></a></li>
+     
+    	<li><a href="/tags.html#cloud-ref">cloud <span>1</span></a></li>
+    
+  
+
+
+
+    </ul>
+    
+  
+    <hr>
+    <ul class="pagination">
+    
+      <li class="prev"><a href="/lessons/2014/06/09/linux-network-namespace" title="Linux Network Namespace">&laquo; Previous</a></li>
+    
+      <li><a href="/archive.html">Archive</a></li>
+    
+      <li class="next"><a href="/2014/06/13/linux-interrupt" title="Linux Interrupt">Next &raquo;</a></li>
+    
+    </ul>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'jekyllbootstrap'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+    </div>
+    <div id="footer">
+      <div class="container">
+        <p>&copy; 2018 Eli Qiao 
+           &copy; email: taget@163.com
+           &copy;  Hakder友情链接： <a href=" http://chris.yeoh.info" target="_blank">Chris Yeoh</a> & 
+           <a href="http://soulxu.github.io/" target="_blank">Alex Xu</a>
+        </p>
+      </div>
+    </div id="footer">
+
+    
+
+
+    <!-- Latest compiled and minified JavaScript, requires jQuery 1.x (2.x not supported in IE8) -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/assets/themes//bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>
+

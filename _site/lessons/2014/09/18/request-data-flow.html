@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Request Data Flow</title>
+    
+    <meta name="author" content="Eli Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap styles -->
+    <link href="/assets/themes//bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Optional theme -->
+    <link href="/assets/themes//bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Sticky Footer -->
+    <link href="/assets/themes//bootstrap/css/bs-sticky-footer.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="/assets/themes//css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jb-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Eli Qiao's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="jb-navbar-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/archive">Archive</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/pages">Pages</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags">Tags</a></li>
+      	
+      
+    
+  
+
+
+
+
+          </ul>
+          <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>
+        </div><!-- /.navbar-collapse -->
+      </nav>
+      <div class="text clearfix" style="text-align:center;">
+      </div>
+      <div class="container" id="left" style="border: left;">
+        
+<div class="page-header">
+  <h1>Request Data Flow </h1>
+</div>
+
+<div class="row post-full">
+  <div class="col-xs-12">
+    <div class="date">
+      <span>18 September 2014</span>
+    </div>
+    <div class="content">
+      <h2 id="data-flow-of-openstack-request">Data flow of openstack request</h2>
+
+<p>This post will talk about the data flow of an openstack request, I will take boot an instance and shelve an instance as example.</p>
+
+<p>Assume that you have setup an openstack environment already.</p>
+
+<p>Let’s start from nova client, you can put <code>–debug</code> option to nova client then you will see the request url nova client sent.</p>
+
+<h3 id="boot-an-instance">Boot an instance</h3>
+
+<pre><code>[tagett@stack-01 devstack]$ nova --debug boot t3 --flavor m1.nano --image  44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf --nic net-id=b745b2c6-db16-40ab-8ad7-af6da0e5e699
+…
+REQ: curl -i 'http://cloudcontroller:5000/v2.0/tokens'
+REQ: curl -i 'http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/images/44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf'
+REQ: curl -i 'http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/flavors/m1.nano'
+REQ: curl -i 'http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers' -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "User-Agent: python-novaclient" -H "X-Auth-Project-Id: admin" -H "X-Auth-Token: {SHA1}15d9e554b7456f1043732bb8df72d1521c5f6aa1" -d '{"server": {"name": "t3", "imageRef": "44c37b90-0ec3-460a-bdf2-bd8bb98c9fdf", "flavorRef": "42", "max_count": 1, "min_count": 1, "networks": [{"uuid": "b745b2c6-db16-40ab-8ad7-af6da0e5e699"}]}}'
+…
+</code></pre>
+
+<p>The requests from nova client are:</p>
+
+<p>1)  Get token from keystone server with username and password, keystone will return the token, and also the tenant id.</p>
+
+<p>2)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if image existed.</p>
+
+<p>3)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token to check if favors existed.</p>
+
+<p>4)  Request to create an instance, all request data are put in the request body, check –d section.</p>
+
+<p>Nova client help you to make all requests together, the most important one is the 4), if you are sure about all resources, you can simply run 4) to create an instance.</p>
+
+<p>The date flow will be follows:</p>
+
+<p>Nova client -&gt; nova-api -&gt; nova-conductor-&gt;nova-scheduler-&gt;nova-compute</p>
+
+<p><img src="/assets/images/boot.png" alt="boot" /></p>
+
+<p>Each one is a service(a running process), they call each other through rpc server.</p>
+
+<p>Let’s take a look at the service side code.</p>
+
+<p>The nova-api service is a wigi server, you can find the code from:</p>
+
+<p>nova /api/openstack/compute/servers.py</p>
+
+<p>The handle function is</p>
+
+<pre><code>def create(self, req, body):
+    """Creates a new server for a given user."""
+…   
+(instances, resv_id) = self.compute_api.create(context,
+</code></pre>
+
+<p>After doing so many check, it finally calls the function of create() which defined in compute_api</p>
+
+<p>The code locates at nova/compute/api.py</p>
+
+<pre><code>    @hooks.add_hook("create_instance")
+def create(self, context, instance_type,
+...
+        return self._create_instance(
+</code></pre>
+
+<p>some validation and option are done in _create_instance function.
+Then calling</p>
+
+<pre><code>self.compute_task_api.build_instances(context,
+</code></pre>
+
+<p>compute_task_api is a rpc request to nova-conductor service.</p>
+
+<p>Go to nova/conductor/manager.py, We will find the function</p>
+
+<pre><code>def build_instances(self, context, instances, image, filter_properties,
+… 
+       hosts = self.scheduler_rpcapi.select_destinations(context,
+…
+       self.compute_rpcapi.build_and_run_instance(context,
+</code></pre>
+
+<p>It mainly does 2 things, send request to nova-scheduler to find a host which the newly created instances will run on, and send request to these hosts’ to run an instance.</p>
+
+<p>Then we go to nova/compute/manager.py, which will receive the request from conductor , and it</p>
+
+<pre><code>def build_and_run_instance(self, context, instance, image, request_spec,
+                 filter_properties, admin_password=None,
+                 injected_files=None, requested_networks=None,
+                 security_groups=None, block_device_mapping=None,
+                 node=None, limits=None):
+</code></pre>
+
+<p>this function will call the really hypervisor driver to create instance.
+each service does its own job.</p>
+
+<ul>
+  <li>
+    <p>nova-api: accept the url request and response to client</p>
+  </li>
+  <li>
+    <p>nova-conductor: talk to db, improve the security of db access</p>
+  </li>
+  <li>
+    <p>nova-scheduler: find a specify node though some require specification.</p>
+  </li>
+  <li>
+    <p>nova-compute: do the really compute node related job.</p>
+  </li>
+</ul>
+
+<p>not all of request will call all the services.</p>
+
+<h3 id="shelve-an-instance">Shelve an instance</h3>
+
+<pre><code>[tagett@stack-01 devstack]$ nova list
++--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
+| ID                                   | Name      | Status            | Task State | Power State | Networks                          |
++--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
+| 00be783d-bef5-46b1-bfdc-316618c76e92 | t2        | ACTIVE            | -          | Running     | private=192.168.1.82              |
++--------------------------------------+-----------+-------------------+------------+-------------+-----------------------------------+
+</code></pre>
+
+<p>Then shelve an instance:</p>
+
+<pre><code>[tagett@stack-01 devstack]$ nova --debug shelve t2
+REQ: curl -i 'http://cloudcontroller:5000/v2.0/tokens' …
+REQ: curl -i 'http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers'…
+REQ: curl -i 'http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/r'…
+
+…
+REQ: curl -i 'http://cloudcontroller:8774/v2/d7beb7f28e0b4f41901215000339361d/servers/00be783d-bef5-46b1-bfdc-316618c76e92/action' -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "User-Agent: python-novaclient" -H "X-Auth-Project-Id: admin" -H "X-Auth-Token: {SHA1}0634ea0ef1c3994e1f496c5d8890d32610cf11e9" -d '{"shelve": null}'…
+</code></pre>
+
+<p>There are 4 requests you can see from above, you will see the full request url with request body and also you can find the response code body.</p>
+
+<p>The requests are:</p>
+
+<p>1)  Get token from keystone server with username and password, keystone will return the token, and also the tenant id.</p>
+
+<p>2)  Send another request with tenant id (d7beb7f28e0b4f41901215000339361d) and token. You will get all instances the tenant created.</p>
+
+<p>3)  Another request is check if the instance you want to shelve (00be783d-bef5-46b1-bfdc-316618c76e92) exist.</p>
+
+<p>4)  Do shelve, you can see it is a post request with the body  -d ‘{“shelve”: null}’</p>
+
+<p>At last , nova api return a response as:</p>
+
+<pre><code>RESP: [202] CaseInsensitiveDict({'date': 'Thu, 18 Sep 2014 04:03:09 GMT', 'content-length': '0', 'content-type': 'text/html; charset=UTF-8', 'x-compute-request-id': 'req-4be7dc9a-21da-4050-9310-3ee58ca93569'}) RESP BODY: null
+</code></pre>
+
+<p>Server has accepted(202) your request and will do the shelve asynchronous.</p>
+
+<p>This is what you can see from client side.</p>
+
+<p>Then here’s the server side.</p>
+
+<p>The basic service calling sequence is:
+Novaclient -&gt; nova-api -&gt; nova-conductor -&gt; nova-compute</p>
+
+<p>the api code of shelve is in nova/api/openstack/compute/contrib/shelve.py
+it is an extension of server(as you can see from the request of shelve)
+you can find the follow code:</p>
+
+<p>nova/api/openstack/compute/contrib/shelve.py :</p>
+
+<pre><code>@wsgi.action('shelve')
+def _shelve(self, req, id, body):
+    """Move an instance into shelved mode."""
+    context = req.environ["nova.context"]
+    auth_shelve(context)
+
+    instance = self._get_instance(context, id)
+    try:
+        self.compute_api.shelve(context, instance)
+    except exception.InstanceIsLocked as e:
+        raise exc.HTTPConflict(explanation=e.format_message())
+</code></pre>
+
+<p>the api service will call nova compute api ‘s function shelve,
+the code located at nova/compute/api.py</p>
+
+<pre><code>    if not self.is_volume_backed_instance(context, instance):
+        name = '%s-shelved' % instance['display_name']
+        image_meta = self._create_image(context, instance, name,
+                'snapshot')
+        image_id = image_meta['id']
+        self.compute_rpcapi.shelve_instance(context, instance=instance,
+                image_id=image_id)
+    else:
+        self.compute_rpcapi.shelve_offload_instance(context,
+                instance=instance)
+</code></pre>
+
+<p>then it make a rpc call though compute_rpcapi, the message will send to amqp server and 
+it will received by compute manager, to let’s check the code in nova/compute/manager.py</p>
+
+<p>so the data flow will be</p>
+
+<p><img src="/assets/images/shelve.png" alt="shevle" /></p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/categories.html#lessons-ref">
+    		lessons <span>7</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-tags"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/tags.html#openstack-ref">openstack <span>5</span></a></li>
+    
+  
+
+
+
+    </ul>
+    
+  
+    <hr>
+    <ul class="pagination">
+    
+      <li class="prev"><a href="/lessons/2014/08/14/deploy-openstack-with-packstack" title="Deploy Openstack With Packstack">&laquo; Previous</a></li>
+    
+      <li><a href="/archive.html">Archive</a></li>
+    
+      <li class="next"><a href="/2014/09/23/vhost" title="Vhost net">Next &raquo;</a></li>
+    
+    </ul>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'jekyllbootstrap'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+    </div>
+    <div id="footer">
+      <div class="container">
+        <p>&copy; 2018 Eli Qiao 
+           &copy; email: taget@163.com
+           &copy;  Hakder友情链接： <a href=" http://chris.yeoh.info" target="_blank">Chris Yeoh</a> & 
+           <a href="http://soulxu.github.io/" target="_blank">Alex Xu</a>
+        </p>
+      </div>
+    </div id="footer">
+
+    
+
+
+    <!-- Latest compiled and minified JavaScript, requires jQuery 1.x (2.x not supported in IE8) -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/assets/themes//bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>
+

@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Vhost net</title>
+    <meta name="description" content="">
+    <meta name="author" content="Eli Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap styles -->
+    <link href="/assets/themes//bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Optional theme -->
+    <link href="/assets/themes//bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Sticky Footer -->
+    <link href="/assets/themes//bootstrap/css/bs-sticky-footer.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="/assets/themes//css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jb-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Eli Qiao's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="jb-navbar-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/archive">Archive</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/pages">Pages</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags">Tags</a></li>
+      	
+      
+    
+  
+
+
+
+
+          </ul>
+          <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>
+        </div><!-- /.navbar-collapse -->
+      </nav>
+      <div class="text clearfix" style="text-align:center;">
+      </div>
+      <div class="container" id="left" style="border: left;">
+        
+<div class="page-header">
+  <h1>Vhost net </h1>
+</div>
+
+<div class="row post-full">
+  <div class="col-xs-12">
+    <div class="date">
+      <span>23 September 2014</span>
+    </div>
+    <div class="content">
+      
+<h1 id="vhost-概述">Vhost 概述</h1>
+<p>Linux kernel 中的vhost driver提供了KVM在kernel环境中的virtio设备的模拟。vhost把QEMU模拟设备的代码放在了linux kernel里面，所以设备模拟代码可以直接进入kernel子系统，从而不需要从用户空间通过系统调用陷入内核，减少了由于模拟IO导致的性能下降。</p>
+
+<p>vhost-net是在宿主机上对vhost 网卡的模拟，同样，也有vhost-blk，对block设备的模拟，以及vhost-scsi，对scsi设备的模拟。</p>
+
+<p>vhost 在kernel中的代码位于 drivers/vhost/vhost.c</p>
+
+<h2 id="vhost-驱动模型">Vhost 驱动模型</h2>
+
+<p>vhost driver创建了一个字符设备 /dev/vhost-net，这个设备可以被用户空间打开，并可以被ioctl命令操作。当给一个Qemu进程传递了参数-netdev tap,vhost=on 的时候，QEMU会通过调用几个ioctl命令对这个文件描述符进行一些初始化的工作，然后进行特性的协商，从而宿主机跟客户机的vhost-net driver建立关系。
+QEMU代码调用如下：</p>
+
+<pre><code>vhost_net_init -&gt; vhost_dev_init -&gt; vhost_net_ack_features
+</code></pre>
+
+<p>在vhost_net_init中调用了 vhost_dev_init ，打开/dev/vhost-net这个设备，然后返回一个文件描述符作为vhost-net的后端，
+vhost_dev_init 调用的ioctl命令有</p>
+
+<pre><code>r = ioctl(hdev-&gt;control, VHOST_SET_OWNER, NULL);
+</code></pre>
+
+<p>Kernel 中的定义为：</p>
+
+<pre><code>1.  /* Set current process as the (exclusive) owner of this file descriptor.  This  
+2.   * must be called before any other vhost command.  Further calls to  
+3.   * VHOST_OWNER_SET fail until VHOST_OWNER_RESET is called. */  
+4.  #define VHOST_SET_OWNER _IO(VHOST_VIRTIO, 0x01)
+</code></pre>
+
+<p>然后获取VHOST支持的特性</p>
+
+<pre><code>r = ioctl(hdev-&gt;control, VHOST_GET_FEATURES, &amp;features);
+</code></pre>
+
+<p>同样，kernel中的定义为：</p>
+
+<pre><code>1.  /* Features bitmask for forward compatibility.  Transport bits are used for  
+2.   * vhost specific features. */  
+3.  #define VHOST_GET_FEATURES      _IOR(VHOST_VIRTIO, 0x00, __u64)  
+</code></pre>
+
+<p>QEMU中用vhost_net 这个数据结构代表打开的vhost_net 实例：</p>
+
+<pre><code>1.  struct vhost_net {  
+2.      struct vhost_dev dev;  
+3.      struct vhost_virtqueue vqs[2];  
+4.      int backend;  
+5.      NetClientState *nc;  
+6.  };  
+</code></pre>
+
+<p>使用ioctl设置完后，QEMU注册memory_listener 回调函数:</p>
+
+<pre><code>1.  hdev-&gt;memory_listener = (MemoryListener) {  
+2.      .begin = vhost_begin,  
+3.      .commit = vhost_commit,  
+4.      .region_add = vhost_region_add,  
+5.      .region_del = vhost_region_del,  
+6.      .region_nop = vhost_region_nop,  
+7.      .log_start = vhost_log_start,  
+8.      .log_stop = vhost_log_stop,  
+9.      .log_sync = vhost_log_sync,  
+10.     .log_global_start = vhost_log_global_start,  
+11.     .log_global_stop = vhost_log_global_stop,  
+12.     .eventfd_add = vhost_eventfd_add,  
+13.     .eventfd_del = vhost_eventfd_del,  
+14.     .priority = 10  
+15. };  
+</code></pre>
+
+<p>vhost_region_add 是为了将QEMU guest的地址空间映射到vhost driver</p>
+
+<p>最后进行特性的协商:</p>
+
+<pre><code>1.  /* Set sane init value. Override when guest acks. */  
+2.  vhost_net_ack_features(net, 0); 
+</code></pre>
+
+<p>与此同时，kernel中要创建一个kernel thread 用于处理I/O事件和设备的模拟。
+kernel代码 drivers/vhost/vhost.c：</p>
+
+<p>在vhost_dev_set_owner中，调用了这个函数用于创建worker线程（线程名字为vhost-qemu+进程pid）</p>
+
+<p><img src="/assets/images/vhost-net.jpg" alt="arc of vhost" /></p>
+
+<h2 id="kernel-中的virtio-模拟">Kernel 中的virtio 模拟</h2>
+
+<p>vhost并没有完全模拟一个pci设备，相反，它只把自己限制在对virtqueue的操作上。</p>
+
+<p>worker thread 一直等待virtqueue的数据，对于vhost-net来说，当virtqueue的tx队列中有数据了，它会把数据传送到与其相关联的tap设备文件描述符上。</p>
+
+<p>相反，worker thread 也要进行tap文件描述符的轮询，对于vhost-net，当tap文件描述符有数据到来时候，worker thread会被唤醒，然后将数据传送到rx队列中。</p>
+
+<h2 id="vhost的在用户空间的接口">vhost的在用户空间的接口</h2>
+
+<p>数据已经准备好了，如何通知客户机呢？</p>
+
+<p>从vhost模块的依赖性可以得知，vhost这个模块并没有依赖于kvm 模块，也就是说，理论上其他应用只要实现了和vhost接口，也可以调用vhost来进行数据传输的加速。</p>
+
+<p>但也正是因为vhost跟kvm模块没什么关系，当QEMU（KVM）guest把数据放到tx队列（virtqueue）上之后，它是没有办法直接通知vhost数据准备了的。</p>
+
+<p>不过，vhost 设置了一个eventfd文件描述符，这个文件描述符被前面我们提到的worker thread 监控，所以QEMU可以通过向eventfd发送消息告诉vhost数据准备好了。</p>
+
+<p>QEMU的做法是这样的，在QEMU中注册一个ioeventfd，当guest 发生I/O退出了，会被KVM捕捉到，KVM向vhost发送eventfd从而告知vhost KVM guest已经准备好数据了。由于 worker thread监控这个eventfd，在收到消息后，知道guest已经把数据放到了tx队列，可以进行对戏</p>
+
+<p>vhost通过发出一个guest中断，通过KVM提供的irqevent，告诉guest需要传送的buffer已经放到了rx virtqueue了，QEMU（KVM）注册这个irq PCI事件，得知内核空间的数据准备好了，调用guest驱动进行数据的读取。</p>
+
+<p>所以，总的来说 vhost 实例需要知道的有三样</p>
+
+<ul>
+  <li>guest的内存映射，也就是virtqueue，用于数据的传输</li>
+  <li>qemu kick eventfd，vhost接收guest发送的消息，该消息被worker thread捕获</li>
+  <li>call event（irqfd）用于通知guest</li>
+</ul>
+
+<p>以上三点在QEMU初始化的时候准备好，数据的传输只在内核空间就完成了，不需要QEMU进行干预，所以这也是为什么使用vhost进行传输数据高效的原因。</p>
+
+
+    </div>
+
+    
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-tags"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/tags.html#linux-ref">linux <span>5</span></a></li>
+    
+  
+
+
+
+    </ul>
+    
+  
+    <hr>
+    <ul class="pagination">
+    
+      <li class="prev"><a href="/lessons/2014/09/18/request-data-flow" title="Request Data Flow">&laquo; Previous</a></li>
+    
+      <li><a href="/archive.html">Archive</a></li>
+    
+      <li class="next"><a href="/lessons/2015/07/03/hacking-magnum-swarm-proxy" title="Hacking Magnum Swarm Proxy">Next &raquo;</a></li>
+    
+    </ul>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'jekyllbootstrap'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+    </div>
+    <div id="footer">
+      <div class="container">
+        <p>&copy; 2018 Eli Qiao 
+           &copy; email: taget@163.com
+           &copy;  Hakder友情链接： <a href=" http://chris.yeoh.info" target="_blank">Chris Yeoh</a> & 
+           <a href="http://soulxu.github.io/" target="_blank">Alex Xu</a>
+        </p>
+      </div>
+    </div id="footer">
+
+    
+
+
+    <!-- Latest compiled and minified JavaScript, requires jQuery 1.x (2.x not supported in IE8) -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/assets/themes//bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>
+

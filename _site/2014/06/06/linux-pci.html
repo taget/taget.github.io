@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Linux PCI</title>
+    <meta name="description" content="">
+    <meta name="author" content="Eli Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap styles -->
+    <link href="/assets/themes//bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Optional theme -->
+    <link href="/assets/themes//bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Sticky Footer -->
+    <link href="/assets/themes//bootstrap/css/bs-sticky-footer.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="/assets/themes//css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jb-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Eli Qiao's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="jb-navbar-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/archive">Archive</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/pages">Pages</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags">Tags</a></li>
+      	
+      
+    
+  
+
+
+
+
+          </ul>
+          <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>
+        </div><!-- /.navbar-collapse -->
+      </nav>
+      <div class="text clearfix" style="text-align:center;">
+      </div>
+      <div class="container" id="left" style="border: left;">
+        
+<div class="page-header">
+  <h1>Linux PCI </h1>
+</div>
+
+<div class="row post-full">
+  <div class="col-xs-12">
+    <div class="date">
+      <span>06 June 2014</span>
+    </div>
+    <div class="content">
+      
+<h1 id="pci-简介">PCI 简介</h1>
+<p>PCI(Periheral Component Interconnect)有三种地址空间：PCI I/O空间、PCI内存地址空间和PCI配置空间。</p>
+
+<p>I/O 空间和内存地址空间由PCI驱动使用。
+PCI配置空间由Linux PCI初始化代码使用，由内核用来进行配置，比如中断号和I/O内存基址空间。</p>
+
+<h2 id="pci-桥">PCI 桥</h2>
+<p>一共有三种PCI桥：</p>
+<ul>
+  <li>HOST/PCI桥（HOST bridge）：用于连接CPU和PCI的桥设备</li>
+  <li>PCI/ISA桥 （ISA bridge）：用于连接PCI总线和ISA总线的桥</li>
+  <li>PCI-PCI桥（PCI-PCI bridge）：用于PCI总线的扩展
+下图展示了pci桥的层次连接：</li>
+</ul>
+
+<p><img src="/assets/images/pci-connection.jpg" alt="pci bridge connection" /></p>
+
+<p>在使用PCI设备之前,Linux Knerle需要对其进行枚举和配置。
+枚举的结果就将是一个树状的结构，根是HOST/PCI桥。</p>
+
+<h2 id="配置pci设备">配置PCI设备</h2>
+<p>Linux kernel 对PCI配置空间进行配置。这个PCI配置空间其实就是一些寄存器，称为配置寄存器组。
+当PCI设备尚未被激活的时候，它只对配置事务响应。设备上是不会有I/O端口映射到计算机的内存空间的。
+中断也会被禁止。</p>
+
+<h2 id="pci设备的地址空间">PCI设备的地址空间</h2>
+<p>所有PCI设备的配置空间寄存器组都采用相同的地址，由总线的PCI桥在访问时附加上其他条件进行区分。
+对于CPU来说，它通过一个统一的入口地址HOST/PCI桥，即树型结构的根发出指令，再由相应的PCI桥间接地完成具体的读写。
+这个PCI桥（或者称PCI总线）包含两个寄存器，’地址寄存器’和’数据寄存器’，CPU向’地址寄存器’写入要访问的地址，然后通过’数据寄存器’读取数据。
+地址寄存器的地址组成：
+总线号：设备号：功能号：寄存器号
+示例，lspci 输出：</p>
+
+<ul>
+  <li>0000 : PCI domain (each domain can contain up to 256 PCI buses)</li>
+  <li>04   : the bus number the device is attached to</li>
+  <li>00   : the device number</li>
+  <li>.0   : PCI device function</li>
+</ul>
+
+<h2 id="访问pci设备的几种方式">访问PCI设备的几种方式</h2>
+<ul>
+  <li>通过访问I/O端口, I/O 地址空间一般不关联到系统内存，因为端口也可以映射到内存中，会引起混淆;</li>
+  <li>I/O 内存映射，就是我们通常说的MMIO,即将特定外设的端口地址映射到普通内存中。cpu可以像普通内存一样操作设备。内核通过ioremap和iounmap命令用于映射I/O内存</li>
+  <li>轮询和中断，显然中断是更好的方式。</li>
+</ul>
+
+<h2 id="pci的barbase-address-register">PCI的BAR（base address register）</h2>
+<p>BAR是PCI配置空间中从0x10 到 0x24的6个register，用来定义PCI需要的配置空间大小以及配置PCI设备占用的地址空间。
+X86的地址空间分为，IO 和 MEM 两类，PCI的BAR的某一位决定了设备需要映射到MEM空间还是IO空间。
+POWERPC只有MEM空间（IO空间不单独编址）。</p>
+
+
+    </div>
+
+    
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-tags"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/tags.html#linux-ref">linux <span>5</span></a></li>
+    
+  
+
+
+
+    </ul>
+    
+  
+    <hr>
+    <ul class="pagination">
+    
+      <li class="prev"><a href="/lessons/2014/06/06/fedora-live-upgrade" title="Fedora Live Upgrade">&laquo; Previous</a></li>
+    
+      <li><a href="/archive.html">Archive</a></li>
+    
+      <li class="next"><a href="/lessons/2014/06/09/linux-network-namespace" title="Linux Network Namespace">Next &raquo;</a></li>
+    
+    </ul>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'jekyllbootstrap'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+    </div>
+    <div id="footer">
+      <div class="container">
+        <p>&copy; 2018 Eli Qiao 
+           &copy; email: taget@163.com
+           &copy;  Hakder友情链接： <a href=" http://chris.yeoh.info" target="_blank">Chris Yeoh</a> & 
+           <a href="http://soulxu.github.io/" target="_blank">Alex Xu</a>
+        </p>
+      </div>
+    </div id="footer">
+
+    
+
+
+    <!-- Latest compiled and minified JavaScript, requires jQuery 1.x (2.x not supported in IE8) -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/assets/themes//bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>
+

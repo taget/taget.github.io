@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Deploy Openstack With Packstack</title>
+    
+    <meta name="author" content="Eli Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap styles -->
+    <link href="/assets/themes//bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Optional theme -->
+    <link href="/assets/themes//bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Sticky Footer -->
+    <link href="/assets/themes//bootstrap/css/bs-sticky-footer.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="/assets/themes//css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jb-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Eli Qiao's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="jb-navbar-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/archive">Archive</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/pages">Pages</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags">Tags</a></li>
+      	
+      
+    
+  
+
+
+
+
+          </ul>
+          <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>
+        </div><!-- /.navbar-collapse -->
+      </nav>
+      <div class="text clearfix" style="text-align:center;">
+      </div>
+      <div class="container" id="left" style="border: left;">
+        
+<div class="page-header">
+  <h1>Deploy Openstack With Packstack </h1>
+</div>
+
+<div class="row post-full">
+  <div class="col-xs-12">
+    <div class="date">
+      <span>14 August 2014</span>
+    </div>
+    <div class="content">
+      <h2 id="使用packstack部署openstack">使用packstack部署openstack</h2>
+
+<p>本文将介绍如何使用Redhat提供的packstack部署openstack</p>
+
+<h3 id="openstack-简介">Openstack 简介</h3>
+<p>openstack 是一整套资源管理软件的集合，也是当前最热的开源虚拟化管理软件之一，有一个全球139个国家将近两万开发者参与的开源社区（www.openstack.org）作为支持。openstack项目的目的是快速建设一个稳定可靠的公有云或私有云系统。整个项目涵盖了计算，存储，网络以及前端展现等关于云管理的全部方面，包含了众多子项目。</p>
+
+<p>主要包含了一下几个子项目:</p>
+
+<ul>
+  <li>OpenStack Compute (code-name Nova) 计算服务</li>
+  <li>OpenStack Networking (code-name Neutron) 网络服务</li>
+  <li>OpenStack Object Storage (code-name Swift) 对象存储服务</li>
+  <li>OpenStack Block Storage (code-name Cinder) 块设备存储服务</li>
+  <li>OpenStack Identity (code-name Keystone) 认证服务</li>
+  <li>OpenStack Image Service (code-name Glance) 镜像文件服务</li>
+  <li>OpenStack Dashboard (code-name Horizon) 仪表盘服务</li>
+  <li>OpenStack Telemetry (code-name Ceilometer) 告警服务</li>
+  <li>OpenStack Orchestration (code-name Heat) 流程服务</li>
+  <li>OpenStack Database (code-name Trove) 数据库服务</li>
+</ul>
+
+<p>openstack的特点各个服务之间通过统一的REST风格的API调用，实现系统的松耦合。</p>
+
+<p><img src="/assets/images/openstack-whole.jpg" alt="whole picture of openstack" /></p>
+
+<p>图中实线代表client api调用，虚线代表各个组件之间通过REST API进行通信。从图中可以看出，openstack的整体架构是松耦合的，这样做的好处是，各个组件的开发人员可以只关注各自的领域，对各自领域的修改不会影响到其他开发人员。不过，从另一方面来讲，这种松耦合的架构也给整个系统的维护带来了一定的困难。运维人员可能要掌握更多的系统相关的知识去调试出了问题的组件。
+关于openstack更多信息，读者可以查阅参考文献中的opesntack社区连接，用以获得更多最新的动态。</p>
+
+<h3 id="部署openstack">部署openstack</h3>
+
+<p>各种发行版提供了各自openstack的安装部署方式，基于fedora 的RDO，我们可以快速部署openstack环境到一个物理机上，然后对其进行计算节点扩展。</p>
+
+<p>RDO是一个快速安装部署fedora，redhat，centos发行版的openstack工具。另外，redhat也提供了企业版本openstack支持，参考如下链接http://www.redhat.com/openstack/</p>
+
+<p><strong>使用RDO部署单节点</strong></p>
+
+<p>笔者使用环境是fedora20，只需要简单几条命令即可完成openstack的penstack的allinone模式，即部署openstack环境到一台单机上（fedora20环境下要打开Selinux, ‘sudo setenforce permissive’)</p>
+
+<pre><code>sudo yum update –y
+sudo yum install -y openstack-packstack
+packstack --allinone
+</code></pre>
+
+<p>packstack 配置过程中需要安装一些软件，比如说puppet，所以需要确保主机接入了网络，
+同时确保sshd service是启动状态，按照提示输入root账号的密码。
+packstack会帮我们创建mysql数据库，创建用户密码等，如果整个安装过程没有报错，整个环境就搭建好了。</p>
+
+<p>fedora20的openstack-puppet-modules-2013.2-9.1.fc20.noarch包中有一个bug，社区已经有了fix，读者可以自行按照该链接进行修改
+/usr/share/openstack-puppet/modules/neutron/lib/puppet/provider/neutron_subnet/neutron.rb
+https://git.openstack.org/cgit/stackforge/puppet-neutron/commit/?id=78428c844f73bf585a8f8a3bdf615ba2a0e8983b
+安装过程中如果出现任何错误，读者可以根据屏幕输出的提示查看日志文件，手动修复后，删除生成的answers文件，重新运行packstack –allinone 即可。
+如果一切安装顺利，在root目录下会生成以下3个文件</p>
+
+<pre><code>keystonerc_admin  keystonerc_demo   packstack-answers-20140624-142948.txt
+</code></pre>
+
+<blockquote>
+  <p><strong>注</strong></p>
+  <ul>
+    <li>关于packstack的一些已知的workaroud，请查阅如下链接http://openstack.redhat.com/Workarounds</li>
+    <li>fedora 20 的openstack-dashboard 与 python-django 1.6.0 以上的版本不兼容，所以需要使用1.5版本的 python-django-1.5.5-2.fc20.noarch，这时，先引入packstack生成的环境变量文件</li>
+  </ul>
+</blockquote>
+
+<pre><code>[root@stack-kvm110] # source .keystonerc_admin
+</code></pre>
+
+<p>然后使用nova-manage service list 命令查看nova服务的状态。</p>
+
+<pre><code>[root@stack-kvm110 ~(keystone_admin)]# nova-manage service list
+Binary           Host                Zone            Status     State Updated_At
+nova-conductor   stack-kvm110        internal          enabled    :-)   2014-06-27 02:12:09
+nova-cert        stack-kvm110         internal         enabled    :-)   2014-06-27 02:12:07
+nova-consoleauth stack-kvm110         internal          enabled    :-)   2014-06-27 02:12:08
+nova-scheduler   stack-kvm110         internal          enabled    :-)   2014-06-27 02:12:12
+nova-compute    stack-kvm110         nova            enabled    :-)   2014-06-27 02:12:13
+</code></pre>
+
+<p>从命令输出可以看出在stack-kvm主机上运行的服务。
+或者通过浏览器访问dashboard，在浏览器打开http://$YOURIP/dashboard 就可以访问安装好的openstack前端dashboard。用户名是admin，密码通过查看keystonerc_admin
+可以获得，此时，控制节点，网络节点和计算节点都安装在一台服务器上了。</p>
+
+<p><strong>添加新的计算点</strong></p>
+
+<p>接下来继续添加新的节点用做计算节点（9.181.129.64）。
+打开packstack生成的packstack-answers-20140624-142948.txt 文件，编辑
+修改网卡名字，为了让新添加的节点可以与之前创建的节点共享同一个似有网
+需要修改CONFIG_NOVA_COMPUTE_PRIVIF和CONFIG_NOVA_NETWORK_PRIVIF，把他们指向一个物理网卡（第二块网卡）</p>
+
+<pre><code># Private interface for Flat DHCP on the Nova compute servers
+CONFIG_NOVA_COMPUTE_PRIVIF=eth1
+# Private interface for network manager on the Nova network server
+CONFIG_NOVA_NETWORK_PRIVIF=eth1
+</code></pre>
+
+<p>另外，修改</p>
+
+<pre><code># A comma separated list of IP addresses on which to install the Nova
+# Compute services
+CONFIG_NOVA_COMPUTE_HOSTS=192.168.1.64
+</code></pre>
+
+<p>同时保证 CONFIG_NOVA_NETWORK_HOSTS 是第一个节点192.168.1.110。
+重新运行</p>
+
+<pre><code>sudo packstack --answer-file=packstack-answers-20140624-142948.txt
+</code></pre>
+
+<p>安装完成后，在controler节点上通过nova-manage service 可以看到新增加的compute节点stack-01。</p>
+
+<pre><code>[root@stack-kvm110 ~(keystone_admin)]# nova-manage service list
+Binary           Host                     Zone             Status     State Updated_At
+nova-conductor   stack-kvm110             internal         enabled    :-)   2014-06-27 02:23:29
+nova-cert        stack-kvm110             internal         enabled    :-)   2014-06-27 02:23:28
+nova-consoleauth stack-kvm110             internal         enabled    :-)   2014-06-27 02:23:28
+nova-scheduler   stack-kvm110             internal         enabled    :-)   2014-06-27 02:23:32
+nova-compute     stack-kvm110            nova          enabled    :-)   2014-06-27 02:23:33
+**nova-compute     stack-01               nova          enabled    :-)   2014-06-27 02:23:27**
+</code></pre>
+
+<p><strong>配置网络节点和计算节点的物理网络</strong></p>
+
+<p>本文中使用openvswitch 作为虚拟网络的驱动插件，图2是网络节点与单台计算节点的物理连接图。</p>
+
+<p><img src="/assets/images/neutron-phy.jpg" alt="neutron 网络物理连接" /></p>
+
+<p>如图所示，绿色的连接是数据网络，专门用于租户的虚拟机之间的连接。灰色的是管理网络，用于openstack各个组件之间的网络通信。管理节点通过eth2网卡接入到外网路由器，也是整个openstack系统外网流量的出口。网络节点以及计算节点的neutron配置。</p>
+
+<p>本文中使用neutron配置虚拟网络，网络节点与控制节点安装在同一节点机器。
+从图中我们可以看出openstack的网络分为：</p>
+
+<ul>
+  <li>管理网，用于openstack 各个组件之间的通信</li>
+  <li>数据网， 虚拟机之间的通信</li>
+</ul>
+
+<p><strong>vlan方式</strong></p>
+
+<p>使用这种方式的前提是，连接计算节点和网络节点的交换机配置了或者支持vlan功能。
+网络节点：</p>
+
+<pre><code>/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini：
+[ovs]
+tenant_network_type = vlan
+network_vlan_ranges = physnet1,physnet2:101:110
+integration_bridge = br-int
+bridge_mappings = physnet1:br-ex,physnet2:br-eth1
+</code></pre>
+
+<p>计算节点：</p>
+
+<pre><code>[ovs]
+tenant_network_type = vlan
+network_vlan_ranges = physnet2:101:110
+integration_bridge = br-int
+bridge_mappings = physnet2:br-eth1
+</code></pre>
+
+<p>图3中蓝框所示为openvswitch网桥</p>
+
+<p><img src="/assets/images/logic-network.jpg" alt="虚拟网络的逻辑连接" /></p>
+
+<p><strong>gre方式</strong></p>
+
+<p>与vlan方式类似，只不过在网络节点与计算节点之间建立了条专用通道
+网络节点：</p>
+
+<pre><code>/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini：
+enable_tunneling = True
+tunnel_type = gre
+tunnel_id_ranges = 1:1000
+local_ip = 9.181.129.110
+integration_bridge = br-int
+tunnel_bridge = br-tun
+</code></pre>
+
+<p>计算节点：</p>
+
+<pre><code>enable_tunneling = True
+tunnel_type = gre
+tunnel_id_ranges = 1:1000
+local_ip = 9.181.129.64
+integration_bridge = br-int
+tunnel_bridge = br-tun
+</code></pre>
+
+<p>使用neutron命令创建虚拟网络
+创建public网络，子网以及路由器</p>
+
+<pre><code>$ neutron router-create router01
+$ neutron net-create public01 \
+--provider:network_type flat \
+--provider:physical_network physnet1 \
+--router:external=True
+$ neutron subnet-create --name public01_subnet01 \
+--gateway 192.168.1.1 public01 192.168.1.0、24 --disable-dhcp
+$ neutron router-gateway-set router01 public01
+</code></pre>
+
+<p>创建内部网络net01以及子网</p>
+
+<pre><code>$ neutron net-create net01 \
+--provider:network_type vlan \
+--provider:physical_network physnet2 \
+--provider:segmentation_id 101
+$ neutron subnet-create --tenant-id $tenant --name net01_subnet01 net01 192.168.101.0/24
+$ neutron router-interface-add router01 net01_subnet01
+</code></pre>
+
+<p>同理创建内部网络net02以及子网</p>
+
+<pre><code>$ neutron net-create net02 \
+--provider:network_type vlan \
+--provider:physical_network physnet2 \
+--provider:segmentation_id 102
+$ neutron subnet-create --tenant-id $tenant --name net02_subnet01 net01 192.168.102.0/24
+$ neutron router-interface-add router01 net02_subnet01
+</code></pre>
+
+<p>创建基于gre的私有网络net03和子网以及net04和子网</p>
+
+<pre><code>$ neutron net-create net03 --provider:network_type gre --provider:physical_network physnet2 tunnel_id_ranges = 1:1000 enable_tunneling = True
+$ neutron subnet-create --name net03_subnet01 net03 192.168.103.0/24
+
+$ neutron net-create net04 --provider:network_type gre --provider:physical_network physnet2 tunnel_id_ranges = 1:1000 enable_tunneling = True
+$ neutron subnet-create --name net04_subnet01 Net04 192.168.104.0/24
+</code></pre>
+
+<p><img src="/assets/images/dashboard.jpg" alt="openstack dashboard" /></p>
+
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/categories.html#lessons-ref">
+    		lessons <span>7</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+  
+    <ul class="tag_box inline">
+      <li><i class="glyphicon-tags"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a href="/tags.html#openstack-ref">openstack <span>5</span></a></li>
+    
+  
+
+
+
+    </ul>
+    
+  
+    <hr>
+    <ul class="pagination">
+    
+      <li class="prev"><a href="/2014/06/13/linux-interrupt" title="Linux Interrupt">&laquo; Previous</a></li>
+    
+      <li><a href="/archive.html">Archive</a></li>
+    
+      <li class="next"><a href="/lessons/2014/09/18/request-data-flow" title="Request Data Flow">Next &raquo;</a></li>
+    
+    </ul>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'jekyllbootstrap'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+    </div>
+    <div id="footer">
+      <div class="container">
+        <p>&copy; 2018 Eli Qiao 
+           &copy; email: taget@163.com
+           &copy;  Hakder友情链接： <a href=" http://chris.yeoh.info" target="_blank">Chris Yeoh</a> & 
+           <a href="http://soulxu.github.io/" target="_blank">Alex Xu</a>
+        </p>
+      </div>
+    </div id="footer">
+
+    
+
+
+    <!-- Latest compiled and minified JavaScript, requires jQuery 1.x (2.x not supported in IE8) -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/assets/themes//bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>
+
