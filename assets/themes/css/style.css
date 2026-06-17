@@ -1,79 +1,395 @@
-/* Custom container */
+/* ============================================================
+   Eli Qiao's Blog - Light Tech Theme
+   Overrides Bootstrap 3 base styles. Loaded after bootstrap.
+   ============================================================ */
 
-/* Replaced with normal container and standard footer */
-/*.container-narrow {
-  margin: 0 auto;
-  max-width: 700px; }
+/* ---------- Design tokens ---------- */
+:root {
+  --tech-blue: #2563eb;
+  --tech-purple: #7c3aed;
+  --tech-cyan: #06b6d4;
+  --tech-grad: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --tech-grad-soft: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(124, 58, 237, 0.12) 100%);
 
-.container-narrow > hr {
-  margin: 30px 0; }
-*/
+  --bg-page: #f6f8fc;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-soft: #e2e8f0;
 
-/* Replaced with standard BS3 Navbar */
-/*.navbar .nav {
-  float: right; }*/
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 10px 30px -12px rgba(37, 99, 235, 0.18), 0 4px 12px rgba(15, 23, 42, 0.05);
+  --shadow-glow: 0 12px 40px -10px rgba(124, 58, 237, 0.28);
 
-/* Jekyll Bootstrap Colors */
+  --radius: 14px;
+  --radius-sm: 9px;
+  --mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+/* ---------- Base ---------- */
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-main);
+  /* Fallback solid color first, then layered gradients for modern browsers */
+  background-color: var(--bg-page);
+  background-image:
+    radial-gradient(60vw 50vh at 12% -8%, rgba(37, 99, 235, 0.10), transparent 60%),
+    radial-gradient(55vw 45vh at 95% 0%, rgba(124, 58, 237, 0.10), transparent 55%),
+    linear-gradient(180deg, #f6f8fc 0%, #eef1f8 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--tech-blue);
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+a:hover,
+a:focus {
+  color: var(--tech-purple);
+  text-decoration: none;
+}
+
+#wrap {
+  padding-bottom: 60px;
+}
+
+/* ---------- Headings with gradient ---------- */
 h1, h2, h3, h4 {
-  color: #f22430;
+  color: var(--text-main);
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
-#footer {
-  background-color: #fdcd60;
-}
 
-
-
-/* posts index */
-.post > h3.title {
+.page-header {
+  border-bottom: none;
   position: relative;
-  padding-top: 10px; }
-
-.post > h3.title span.date {
+  padding-bottom: 18px;
+  margin-top: 28px;
+}
+.page-header h1 {
+  background: var(--tech-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--tech-blue); /* fallback for non-clip browsers */
+  display: inline-block;
+}
+.page-header h1 small {
+  -webkit-text-fill-color: var(--text-muted);
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.page-header::after {
+  content: "";
   position: absolute;
-  right: 0;
-  font-size: 0.9em; }
+  left: 0;
+  bottom: 0;
+  width: 90px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--tech-grad);
+}
 
-.post > .more {
-  margin: 10px 0;
-  text-align: left; }
+/* ---------- Navbar: glass ---------- */
+.navbar.navbar-default {
+  background-color: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  border-radius: 0;
+  box-shadow: none;
+  transition: box-shadow 0.25s ease, background-color 0.25s ease;
+}
+.navbar.navbar-default.scrolled {
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-sm);
+}
+.navbar-default .navbar-brand {
+  font-weight: 700;
+  font-size: 19px;
+  background: var(--tech-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--tech-blue);
+}
+.navbar-default .navbar-brand::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 9px;
+  border-radius: 3px;
+  vertical-align: middle;
+  background: var(--tech-grad);
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.6);
+  -webkit-text-fill-color: initial;
+}
+.navbar-default .navbar-nav > li > a {
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: color 0.18s ease;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus,
+.navbar-default .navbar-nav > .active > a {
+  color: var(--tech-blue);
+  background: transparent;
+}
+.navbar-form .form-control {
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  box-shadow: none;
+}
+.navbar-form .form-control:focus {
+  border-color: var(--tech-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
 
-/* post-full*/
-.post-full .date {
-  margin-bottom: 20px;
-  font-weight: bold; }
+/* ---------- Buttons ---------- */
+.btn-default,
+.btn-tech {
+  border: none;
+  color: #fff;
+  background: var(--tech-grad);
+  border-radius: 999px;
+  padding: 7px 18px;
+  font-weight: 500;
+  box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.6);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+.btn-default:hover,
+.btn-tech:hover,
+.btn-default:focus,
+.btn-tech:focus {
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow);
+  opacity: 0.96;
+}
 
-/* tag_box */
+/* ---------- Card container ---------- */
+.tech-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 28px 32px;
+  margin: 22px 0 32px;
+}
+
+#left.container {
+  max-width: 880px;
+}
+
+/* ---------- Post meta ---------- */
+.post-full .date,
+.tech-date {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.82em;
+  color: var(--tech-blue);
+  background: var(--tech-grad-soft);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.content {
+  line-height: 1.75;
+  color: var(--text-main);
+}
+.content img {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- Code blocks ---------- */
+pre,
+code {
+  font-family: var(--mono);
+}
+code {
+  color: var(--tech-purple);
+  background: rgba(124, 58, 237, 0.08);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+pre {
+  position: relative;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid transparent;
+  border-image: var(--tech-grad);
+  border-image-slice: 0 0 0 1;
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  overflow-x: auto;
+}
+pre code {
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+
+/* ---------- Tag box ---------- */
 .tag_box {
   list-style: none;
-  margin: 0;
-  overflow: hidden; }
-
+  margin: 14px 0 0;
+  padding: 0;
+  overflow: hidden;
+}
 .tag_box li {
-  line-height: 28px; }
-
-.tag_box li i {
-  opacity: 0.9; }
-
+  line-height: 30px;
+}
 .tag_box.inline li {
-  float: left; }
-
+  float: left;
+}
 .tag_box a {
-  padding: 3px 6px;
-  margin: 2px;
-  background: #eee;
-  color: #555;
-  border-radius: 3px;
+  padding: 4px 12px;
+  margin: 3px;
+  background: var(--tech-grad-soft);
+  color: var(--tech-blue);
+  border-radius: 999px;
   text-decoration: none;
-  border: 1px dashed #cccccc; }
-
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  transition: all 0.18s ease;
+  display: inline-block;
+}
 .tag_box a span {
   vertical-align: super;
-  font-size: 0.8em; }
-
-.tag_box a:hover {
-  background-color: #e5e5e5; }
-
+  font-size: 0.8em;
+}
+.tag_box a:hover,
 .tag_box a.active {
-  background: #57A957;
-  border: 1px solid #4c964d;
-  color: #FFF; }
+  background: var(--tech-grad);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px -4px rgba(124, 58, 237, 0.5);
+}
+
+/* ---------- Pagination ---------- */
+.pagination > li > a {
+  color: var(--tech-blue);
+  border-color: var(--border-soft);
+  margin: 0 3px;
+  border-radius: var(--radius-sm) !important;
+}
+.pagination > li > a:hover {
+  background: var(--tech-grad-soft);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: var(--tech-purple);
+}
+.pagination > .disabled > a {
+  color: #cbd5e1;
+}
+
+/* ---------- Home post cards ---------- */
+/* On the home page the post-grid lives inside page.html's .tech-card.
+   Flatten that outer card so we don't get a heavy card-in-card look. */
+.tech-card > .post-grid:only-child {
+  margin: 0;
+}
+.post-grid {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+}
+.post-grid .post-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 22px 26px;
+  margin-bottom: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.post-grid .post-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-glow);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.post-grid .post-item h3 {
+  margin: 8px 0 10px;
+  font-size: 1.32em;
+}
+.post-grid .post-item h3 a {
+  color: var(--text-main);
+}
+.post-grid .post-item h3 a:hover {
+  color: var(--tech-blue);
+}
+.post-grid .post-excerpt {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+.post-grid .read-more {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.92em;
+}
+.post-grid .read-more::after {
+  content: " \2192";
+  transition: margin-left 0.18s ease;
+}
+.post-grid .post-item:hover .read-more::after {
+  margin-left: 4px;
+}
+
+/* ---------- Footer ---------- */
+#footer {
+  background: transparent;
+  border-top: 1px solid var(--border-soft);
+  padding: 22px 0;
+}
+#footer .container {
+  text-align: center;
+}
+#footer p {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  margin: 0;
+}
+
+/* ---------- Scroll reveal animation ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .tech-card {
+    padding: 20px 18px;
+  }
+  .post-grid .post-item {
+    padding: 18px 16px;
+  }
+  .page-header {
+    margin-top: 18px;
+  }
+}
