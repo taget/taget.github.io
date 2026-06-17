@@ -5,6 +5,11 @@ permalink: /:categories/:year/:month/:day/:title
 exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "CODEBUDDY.md"]
 highlighter: rouge
 
+# This site renders via its own Jekyll-Bootstrap layouts/includes, not a gem theme.
+# Explicitly disable the theme so GitHub Pages does not inject jekyll-theme-primer.
+theme: null
+plugins: []
+
 # Themes are encouraged to use these universal variables
 # so be sure to set them if your theme uses them.
 #
